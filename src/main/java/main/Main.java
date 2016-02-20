@@ -1,20 +1,50 @@
 package main;
 
-import frontend.Frontend;
+import frontend.SignInServlet;
+import frontend.SignUpServlet;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import javax.servlet.Servlet;
 
-public class Main  {
+
+public class Main {
+
+    public static final int DEFAULT_PORT = 8080;
+
     public static void main(String[] args) throws Exception {
-        Frontend frontend = new Frontend();
+        int port = DEFAULT_PORT;
+        if (args.length == 1) {
+            String portString = args[0];
+            port = Integer.valueOf(portString);
+        }
 
+        System.out.append("Starting at port: ").append(String.valueOf(port)).append('\n');
+
+        AccountService accountService = new AccountService();
+
+        Servlet signin = new SignInServlet(accountService);
+        Servlet signUp = new SignUpServlet(accountService);
+
+        //context paths
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(frontend), "/authform");
+        context.addServlet(new ServletHolder(signin), "/api/v1/auth/signin");
+        context.addServlet(new ServletHolder(signUp), "/api/v1/auth/signup");
 
-        Server server = new Server(8080);
-        server.setHandler(context);
+        //set static directory
+//        ResourceHandler resource_handler = new ResourceHandler();
+//        resource_handler.setDirectoriesListed(true);
+//        resource_handler.setResourceBase("public_html");
+//
+        HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[]{context});
+
+        Server server = new Server(port);
+        server.setHandler(handlers);
 
         server.start();
         server.join();
