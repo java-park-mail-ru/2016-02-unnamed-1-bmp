@@ -15,6 +15,12 @@ public class AccountService {
         return true;
     }
 
+    public boolean updateUser(Integer userId, String newUserName,
+                              String newPass, String newEmail) {
+        //check user in database by id
+        return addUser(newUserName, new UserProfile(newUserName, newPass, newEmail));
+    }
+
     public void addSessions(String sessionId, UserProfile userProfile) {
         sessions.put(sessionId, userProfile);
     }
@@ -25,5 +31,10 @@ public class AccountService {
 
     public UserProfile getSessions(String sessionId) {
         return sessions.get(sessionId);
+    }
+
+    public void deleteUser(String username){
+        UserProfile currUser = users.get(username);
+        currUser.setDeleted();
     }
 }
