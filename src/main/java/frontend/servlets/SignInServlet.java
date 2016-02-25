@@ -16,8 +16,8 @@ public class SignInServlet extends HttpServlet {
     private AccountService accountService;
     private static final JsonParser JSON_PARSER = new JsonParser();
 
-    public SignInServlet(AccountService accountService) {
-        this.accountService = accountService;
+    public SignInServlet() {
+        this.accountService = AccountService.getInstance();
     }
 
     @Override
@@ -30,10 +30,10 @@ public class SignInServlet extends HttpServlet {
 
         if (user != null) {
             response.setStatus(HttpServletResponse.SC_OK);
-            responseBody.add("id", new JsonPrimitive(1));
+            responseBody.add("id", new JsonPrimitive(user.getId()));
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            responseBody.add("error", new JsonPrimitive(sessionId));
+            responseBody.add("error", new JsonPrimitive("User not authorized"));
         }
         response.getWriter().println(responseBody);
     }
@@ -41,41 +41,33 @@ public class SignInServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        JsonObject responseBody = new JsonObject();
         BufferedReader bufferedReader = request.getReader();
         StringBuilder jb = new StringBuilder();
         String line = null;
         while ((line = bufferedReader.readLine()) != null)
             jb.append(line);
 
-        JsonObject responseBody = new JsonObject();
-
         try {
             JsonObject message = JSON_PARSER.parse(jb.toString()).getAsJsonObject();
+
+            if (message.get("login") == null || message.get("password")== null ) {
+                throw new Exception("Not all params send");
+            }
 
             String login = message.get("login").getAsString();
             String password = message.get("password").getAsString();
 
-            //check incoming JSON
-            if (login == null) {
-                throw new Exception("Login required");
-            }
-
-            if (password == null) {
-                throw new Exception("Password required");
-            }
-
             UserProfile user = accountService.getUser(login);
-            if (user != null){
-                throw new Exception("User already exist");
+            if (user == null){
+                throw new Exception("No such user");
             }
-            // database check here in future
 
-            //add session for user
             String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, user);
 
             response.setStatus(HttpServletResponse.SC_OK);
-            responseBody.add("id", new JsonPrimitive(1));
+            responseBody.add("id", new JsonPrimitive(user.getId()));
 
         } catch (JsonSyntaxException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -1,1 +1,1 @@
-java -jar roulette.0-0-1.0-jar-with-dependencies.jar 8080
+java -jar target/seaFight-1.0-jar-with-dependencies.jar

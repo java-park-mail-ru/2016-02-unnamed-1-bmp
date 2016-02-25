@@ -26,10 +26,8 @@ public class Main {
 
         System.out.append("Starting at port: ").append(String.valueOf(port)).append('\n');
 
-        AccountService accountService = new AccountService();
-
-        Servlet signIn = new SignInServlet(accountService);
-        Servlet signUp = new SignUpServlet(accountService);
+        Servlet signIn = new SignInServlet();
+        Servlet signUp = new SignUpServlet();
 
         //context paths
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
