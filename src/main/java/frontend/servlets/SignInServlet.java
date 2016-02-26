@@ -44,7 +44,7 @@ public class SignInServlet extends HttpServlet {
         JsonObject responseBody = new JsonObject();
         BufferedReader bufferedReader = request.getReader();
         StringBuilder jb = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = bufferedReader.readLine()) != null)
             jb.append(line);
 
@@ -59,8 +59,12 @@ public class SignInServlet extends HttpServlet {
             String password = message.get("password").getAsString();
 
             UserProfile user = accountService.getUser(login);
-            if (user == null){
+            if (user == null ){
                 throw new Exception("No such user");
+            }
+
+            if (!accountService.checkPassword(login, password)){
+                throw new Exception("Wrong password");
             }
 
             String sessionId = request.getSession().getId();
@@ -74,7 +78,7 @@ public class SignInServlet extends HttpServlet {
             responseBody.add("error", new JsonPrimitive("wrong json"));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
         response.getWriter().println(responseBody);

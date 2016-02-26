@@ -27,7 +27,7 @@ public class SignUpServlet extends HttpServlet {
 
         BufferedReader bufferedReader = request.getReader();
         StringBuilder jsonBuilder = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = bufferedReader.readLine()) != null)
             jsonBuilder.append(line);
 
@@ -43,7 +43,7 @@ public class SignUpServlet extends HttpServlet {
             String email = message.get("email").getAsString();
             String password = message.get("password").getAsString();
 
-            UserProfile newUser = accountService.createteUser(login, password, email);
+            UserProfile newUser = accountService.createUser(login, password, email);
 
             if (newUser == null) {
                 throw new Exception("Login already exist");
@@ -57,10 +57,10 @@ public class SignUpServlet extends HttpServlet {
 
         } catch (JsonSyntaxException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
         response.getWriter().println(responseBody);
@@ -81,7 +81,7 @@ public class SignUpServlet extends HttpServlet {
                 throw new Exception("Wrong request");
             }
 
-            int userDbId = Integer.parseInt(requestUserId);
+            long userDbId = Integer.parseInt(requestUserId);
             UserProfile requstedUser = accountService.getUserById(userDbId);
 
             String currentSession = request.getSession().getId();
@@ -99,9 +99,9 @@ public class SignUpServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
         response.getWriter().println(responseBody);
     }
@@ -113,24 +113,31 @@ public class SignUpServlet extends HttpServlet {
         JsonObject responseBody = new JsonObject();
         BufferedReader bufferedReader = request.getReader();
         StringBuilder jsonBuilder = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = bufferedReader.readLine()) != null)
             jsonBuilder.append(line);
 
         try {
-            if (request.getPathInfo() == null)
+            if (request.getPathInfo() == null) {
                 throw new Exception("Wrong request");
+            }
 
             String requestUserId = request.getPathInfo().replace("/", "");
 
             if (requestUserId == null || !isInteger(requestUserId, 10)) {
                 throw new Exception("Wrong request");
             }
-            int userId = Integer.parseInt(requestUserId);
+
+            long userId = Integer.parseInt(requestUserId);
+            String currentUserSession = request.getSession().getId();
+
+            if (accountService.getUserBySession(userId, currentUserSession)) {
+                throw new Exception("Request from other user");
+            }
+
             JsonObject message = JSON_PARSER.parse(jsonBuilder.toString()).getAsJsonObject();
 
-            if (message.get("login") == null || message.get("email") == null
-                    || message.get("password") == null) {
+            if (message.get("login") == null || message.get("email") == null || message.get("password") == null) {
                 throw new Exception("Pls enter all params");
             }
 
@@ -147,11 +154,11 @@ public class SignUpServlet extends HttpServlet {
         } catch (JsonSyntaxException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         } catch (NumberFormatException e) {
-            responseBody.add("error", new JsonPrimitive(e.toString()));
-            ;
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
         response.getWriter().println(responseBody);
@@ -172,7 +179,7 @@ public class SignUpServlet extends HttpServlet {
                 throw new Exception("Wrong params");
 
             } else {
-                int userId = Integer.parseInt(requestUserId);
+                long userId = Integer.parseInt(requestUserId);
                 if (!accountService.deleteUser(userId)) {
                     throw new Exception("user doesnt exist");
                 }
@@ -181,10 +188,10 @@ public class SignUpServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.toString()));
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
         response.getWriter().println(responseBody);
     }

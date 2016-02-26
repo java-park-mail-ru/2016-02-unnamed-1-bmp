@@ -2,13 +2,13 @@ package main;
 
 
 public class UserProfile {
-    private Integer id;
+    private Long id;
     private String login;
     private String password;
     private String email;
     private boolean isDeleted;
 
-    public UserProfile(Integer id,String login, String password, String email) {
+    public UserProfile(Long id,String login, String password, String email) {
         this.id = id;
         this.login = login;
         this.password = password;
@@ -38,7 +38,7 @@ public class UserProfile {
         this.isDeleted = true;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return this.id;
     }
 }

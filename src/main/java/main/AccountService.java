@@ -7,9 +7,9 @@ import java.util.Map;
 public class AccountService {
     private static volatile AccountService instance;
     private Map<String, UserProfile> users = new HashMap<>();
-    private Map<Integer, UserProfile> idUsers = new HashMap<>();
+    private Map<Long, UserProfile> idUsers = new HashMap<>();
     private Map<String, UserProfile> sessions = new HashMap<>();
-    private Integer idCounter = 0;
+    private Long idCounter = 0L;
 
     public static AccountService getInstance() {
         AccountService localInstance = instance;
@@ -24,7 +24,7 @@ public class AccountService {
         return localInstance;
     }
 
-    public UserProfile createteUser(String newUserName, String newPass, String newEmail) {
+    public UserProfile createUser(String newUserName, String newPass, String newEmail) {
         if (users.containsKey(newUserName))
             return null;
         UserProfile profile = new UserProfile(idCounter, newUserName, newPass, newEmail);
@@ -33,11 +33,11 @@ public class AccountService {
         return profile;
     }
 
-    public UserProfile getUserById(Integer userId){
+    public UserProfile getUserById(Long userId){
         return idUsers.get(userId);
     }
 
-    public boolean updateUser(Integer userId, String newUserName,
+    public boolean updateUser(Long userId, String newUserName,
                               String newPass, String newEmail) {
         UserProfile user = getUserById(userId);
         if (user == null)
@@ -58,7 +58,7 @@ public class AccountService {
         return sessions.get(sessionId);
     }
 
-    public boolean deleteUser(Integer userId){
+    public boolean deleteUser(Long userId){
         UserProfile currUser = idUsers.get(userId);
         if (currUser == null)
             return false;
@@ -68,4 +68,15 @@ public class AccountService {
         currUser.setDeleted();
         return true;
     }
+
+    public boolean checkPassword(String login, String password) {
+        UserProfile currUser = users.get(login);
+        return currUser.getPassword().equals(password);
+    }
+
+    public boolean getUserBySession(Long currentUserId,String sessionId){
+        long toChangeUserId = sessions.get(sessionId).getId();
+        return currentUserId.equals(toChangeUserId);
+    }
+
 }
