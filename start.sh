@@ -1,1 +1,1 @@
-java -jar target/seaFight-1.0-jar-with-dependencies.jar 7001
+java -jar target/seaFight-1.0-jar-with-dependencies.jar

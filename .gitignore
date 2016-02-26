@@ -25,4 +25,5 @@ Icon
 .Spotlight-V100
 .Trashes
 
-.MF
+*.MF
+tp_java.xml
