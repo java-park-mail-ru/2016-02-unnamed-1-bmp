@@ -29,12 +29,10 @@ public class Main {
         final Servlet signIn = new SignInServlet();
         final Servlet signUp = new SignUpServlet();
 
-        //context paths
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(signIn), "/api/v1/session");
         context.addServlet(new ServletHolder(signUp), "/api/v1/user/*");
 
-        //set static directory
         final ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setDirectoriesListed(true);
         resourceHandler.setResourceBase("public_html");

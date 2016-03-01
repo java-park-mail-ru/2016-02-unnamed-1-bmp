@@ -74,9 +74,15 @@ public class AccountService {
         return currUser.getPassword().equals(password);
     }
 
-    public boolean getUserBySession(Long currentUserId,String sessionId){
+    public boolean getUserBySession(Long currentUserId,String sessionId) {
         final long toChangeUserId = sessions.get(sessionId).getId();
         return currentUserId.equals(toChangeUserId);
     }
 
+    public boolean deleteUserSession(String sessionId) {
+        if (sessions.get(sessionId) == null )
+            return false;
+        sessions.remove(sessionId);
+        return true;
+    }
 }

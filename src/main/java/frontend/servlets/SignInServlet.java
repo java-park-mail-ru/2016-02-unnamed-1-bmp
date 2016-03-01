@@ -22,7 +22,7 @@ public class SignInServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
+                      HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
 
         final String sessionId = request.getSession().getId();
@@ -51,7 +51,7 @@ public class SignInServlet extends HttpServlet {
         try {
             final JsonObject message = jsonParser.parse(jb.toString()).getAsJsonObject();
 
-            if (message.get("login") == null || message.get("password")== null ) {
+            if (message.get("login") == null || message.get("password") == null) {
                 throw new Exception("Not all params send");
             }
 
@@ -59,11 +59,11 @@ public class SignInServlet extends HttpServlet {
             final String password = message.get("password").getAsString();
 
             final UserProfile user = accountService.getUser(login);
-            if (user == null ){
+            if (user == null) {
                 throw new Exception("No such user");
             }
 
-            if (!accountService.checkPassword(login, password)){
+            if (!accountService.checkPassword(login, password)) {
                 throw new Exception("Wrong password");
             }
 
@@ -81,6 +81,25 @@ public class SignInServlet extends HttpServlet {
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
+        response.getWriter().println(responseBody);
+    }
+
+    @Override
+    public void doDelete(HttpServletRequest request,
+                         HttpServletResponse response) throws ServletException, IOException {
+        final JsonObject responseBody = new JsonObject();
+        try {
+            final String sessionId = request.getSession().getId();
+            if ( !accountService.deleteUserSession(sessionId) ){
+                throw new Exception("This session is not registered");
+            }
+
+            response.setStatus(HttpServletResponse.SC_OK);
+
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+        }
         response.getWriter().println(responseBody);
     }
 }
