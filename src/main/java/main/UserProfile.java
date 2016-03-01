@@ -34,7 +34,7 @@ public class UserProfile {
         return email;
     }
 
-    public void setDeleted(){
+    public void setDeleted() {
         this.isDeleted = true;
     }
 

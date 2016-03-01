@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
-    private static final JsonParser JSON_PARSER = new JsonParser();
+    private JsonParser JSON_PARSER = new JsonParser();
 
     public SignUpServlet() {
         this.accountService = AccountService.getInstance();
