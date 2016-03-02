@@ -80,7 +80,7 @@ public class AccountService {
     }
 
     public boolean deleteUserSession(String sessionId) {
-        if (sessions.get(sessionId) == null )
+        if (sessions.get(sessionId) == null)
             return false;
         sessions.remove(sessionId);
         return true;

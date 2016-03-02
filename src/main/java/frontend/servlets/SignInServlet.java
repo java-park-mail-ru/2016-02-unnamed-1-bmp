@@ -88,18 +88,16 @@ public class SignInServlet extends HttpServlet {
     public void doDelete(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-        try {
-            final String sessionId = request.getSession().getId();
-            if ( !accountService.deleteUserSession(sessionId) ){
-                throw new Exception("This session is not registered");
-            }
+        final String sessionId = request.getSession().getId();
 
-            response.setStatus(HttpServletResponse.SC_OK);
-
-        } catch (Exception e) {
+        if (!accountService.deleteUserSession(sessionId)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            responseBody.add("error", new JsonPrimitive("This session is not registered"));
+
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
         }
+
         response.getWriter().println(responseBody);
     }
 }
