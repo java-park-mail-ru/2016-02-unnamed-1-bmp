@@ -14,7 +14,6 @@ import java.io.IOException;
 
 public class SignInServlet extends HttpServlet {
     private AccountService accountService;
-    private final JsonParser jsonParser = new JsonParser();
 
     public SignInServlet() {
         this.accountService = AccountService.getInstance();
@@ -43,20 +42,21 @@ public class SignInServlet extends HttpServlet {
                        HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
-        final StringBuilder jb = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null)
-            jb.append(line);
+        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
 
         try {
-            final JsonObject message = jsonParser.parse(jb.toString()).getAsJsonObject();
+            JsonElement message = new JsonObject();
+            if (jsonParser.hasNext()) {
+                message = jsonParser.next();
+            }
 
-            if (message.get("login") == null || message.get("password") == null) {
+            if (message.getAsJsonObject().get("login") == null
+                    || message.getAsJsonObject().get("password") == null) {
                 throw new Exception("Not all params send");
             }
 
-            final String login = message.get("login").getAsString();
-            final String password = message.get("password").getAsString();
+            final String login = message.getAsJsonObject().get("login").getAsString();
+            final String password = message.getAsJsonObject().get("password").getAsString();
 
             final UserProfile user = accountService.getUser(login);
             if (user == null) {
@@ -73,7 +73,7 @@ public class SignInServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
             responseBody.add("id", new JsonPrimitive(user.getId()));
 
-        } catch (JsonSyntaxException e) {
+        } catch (JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("wrong json"));
         } catch (Exception e) {
