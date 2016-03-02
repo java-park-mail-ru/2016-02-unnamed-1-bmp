@@ -27,7 +27,7 @@ public class AccountService {
     public UserProfile createUser(String newUserName, String newPass, String newEmail) {
         if (users.containsKey(newUserName))
             return null;
-        UserProfile profile = new UserProfile(idCounter, newUserName, newPass, newEmail);
+        final UserProfile profile = new UserProfile(idCounter, newUserName, newPass, newEmail);
         users.put(newUserName, profile);
         idUsers.put(idCounter++, profile);
         return profile;
@@ -39,7 +39,7 @@ public class AccountService {
 
     public boolean updateUser(Long userId, String newUserName,
                               String newPass, String newEmail) {
-        UserProfile user = getUserById(userId);
+        final UserProfile user = getUserById(userId);
         if (user == null)
             return false;
         user.updateProfile(newUserName, newPass, newEmail);
@@ -59,7 +59,7 @@ public class AccountService {
     }
 
     public boolean deleteUser(Long userId){
-        UserProfile currUser = idUsers.get(userId);
+        final UserProfile currUser = idUsers.get(userId);
         if (currUser == null)
             return false;
         users.remove(currUser.getLogin());
@@ -70,13 +70,19 @@ public class AccountService {
     }
 
     public boolean checkPassword(String login, String password) {
-        UserProfile currUser = users.get(login);
+        final UserProfile currUser = users.get(login);
         return currUser.getPassword().equals(password);
     }
 
-    public boolean getUserBySession(Long currentUserId,String sessionId){
-        long toChangeUserId = sessions.get(sessionId).getId();
+    public boolean getUserBySession(Long currentUserId,String sessionId) {
+        final long toChangeUserId = sessions.get(sessionId).getId();
         return currentUserId.equals(toChangeUserId);
     }
 
+    public boolean deleteUserSession(String sessionId) {
+        if (sessions.get(sessionId) == null)
+            return false;
+        sessions.remove(sessionId);
+        return true;
+    }
 }

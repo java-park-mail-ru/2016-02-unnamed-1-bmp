@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class SignInServlet extends HttpServlet {
     private AccountService accountService;
-    private static final JsonParser JSON_PARSER = new JsonParser();
+    private final JsonParser jsonParser = new JsonParser();
 
     public SignInServlet() {
         this.accountService = AccountService.getInstance();
@@ -22,11 +22,11 @@ public class SignInServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request,
-                       HttpServletResponse response) throws ServletException, IOException {
-        JsonObject responseBody = new JsonObject();
+                      HttpServletResponse response) throws ServletException, IOException {
+        final JsonObject responseBody = new JsonObject();
 
-        String sessionId = request.getSession().getId();
-        UserProfile user = accountService.getSessions(sessionId);
+        final String sessionId = request.getSession().getId();
+        final UserProfile user = accountService.getSessions(sessionId);
 
         if (user != null) {
             response.setStatus(HttpServletResponse.SC_OK);
@@ -41,33 +41,33 @@ public class SignInServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-        JsonObject responseBody = new JsonObject();
-        BufferedReader bufferedReader = request.getReader();
-        StringBuilder jb = new StringBuilder();
+        final JsonObject responseBody = new JsonObject();
+        final BufferedReader bufferedReader = request.getReader();
+        final StringBuilder jb = new StringBuilder();
         String line;
         while ((line = bufferedReader.readLine()) != null)
             jb.append(line);
 
         try {
-            JsonObject message = JSON_PARSER.parse(jb.toString()).getAsJsonObject();
+            final JsonObject message = jsonParser.parse(jb.toString()).getAsJsonObject();
 
-            if (message.get("login") == null || message.get("password")== null ) {
+            if (message.get("login") == null || message.get("password") == null) {
                 throw new Exception("Not all params send");
             }
 
-            String login = message.get("login").getAsString();
-            String password = message.get("password").getAsString();
+            final String login = message.get("login").getAsString();
+            final String password = message.get("password").getAsString();
 
-            UserProfile user = accountService.getUser(login);
-            if (user == null ){
+            final UserProfile user = accountService.getUser(login);
+            if (user == null) {
                 throw new Exception("No such user");
             }
 
-            if (!accountService.checkPassword(login, password)){
+            if (!accountService.checkPassword(login, password)) {
                 throw new Exception("Wrong password");
             }
 
-            String sessionId = request.getSession().getId();
+            final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, user);
 
             response.setStatus(HttpServletResponse.SC_OK);
@@ -79,6 +79,23 @@ public class SignInServlet extends HttpServlet {
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+        }
+
+        response.getWriter().println(responseBody);
+    }
+
+    @Override
+    public void doDelete(HttpServletRequest request,
+                         HttpServletResponse response) throws ServletException, IOException {
+        final JsonObject responseBody = new JsonObject();
+        final String sessionId = request.getSession().getId();
+
+        if (!accountService.deleteUserSession(sessionId)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseBody.add("error", new JsonPrimitive("This session is not registered"));
+
+        } else {
+            response.setStatus(HttpServletResponse.SC_OK);
         }
 
         response.getWriter().println(responseBody);
