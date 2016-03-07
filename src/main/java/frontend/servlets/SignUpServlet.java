@@ -1,8 +1,8 @@
 package frontend.servlets;
 
+import base.AccountService;
 import com.google.gson.*;
-import main.AccountService;
-import main.UserProfile;
+import main.AccountServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,12 +11,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import main.Context;
+import base.DBService;
+import base.datasets.UserDataSet;
 
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
+    private DBService dbService;
 
-    public SignUpServlet() {
-        this.accountService = AccountService.getInstance();
+    public SignUpServlet(Context context) {
+        this.dbService = (DBService) context.get(DBService.class);
+        this.accountService = (AccountService) context.get(AccountService.class);
     }
 
     @Override
@@ -41,16 +46,17 @@ public class SignUpServlet extends HttpServlet {
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            final UserProfile newUser = accountService.createUser(login, password, email);
+            final boolean newUser = dbService.saveUser(new UserDataSet(login, password, email));
 
-            if (newUser == null) {
+            if (!newUser) {
                 throw new Exception("Login already exist");
-
             }
-            final String sessionId = request.getSession().getId();
-            accountService.addSessions(sessionId, newUser);
 
-            responseBody.add("id", new JsonPrimitive(newUser.getId()));
+            final String sessionId = request.getSession().getId();
+            final Long newUserId = dbService.getUserByLogin(login).getId();
+            accountService.addSessions(sessionId, newUserId);
+
+            responseBody.add("id", new JsonPrimitive(newUserId));
             response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (JsonParseException e) {
@@ -80,20 +86,21 @@ public class SignUpServlet extends HttpServlet {
             }
 
             final long userDbId = Integer.parseInt(requestUserId);
-            final UserProfile requstedUser = accountService.getUserById(userDbId);
 
-            final String currentSession = request.getSession().getId();
-            final UserProfile currentUser = accountService.getSessions(currentSession);
+            final String currentSessionId = request.getSession().getId();
+            final UserDataSet currUser = dbService.getUserById(userDbId);
 
-            if (currentUser == null || !requstedUser.equals(currentUser)) {
+            //|| !accountService.getUserBySession(currUser.getId(), currentSessionId)
+            if (currUser == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                throw new Exception("Request from wrong user");
+                throw new Exception("Wrong request");
             }
+            final Long currUserId = currUser.getId();
 
             response.setStatus(HttpServletResponse.SC_OK);
-            responseBody.add("id", new JsonPrimitive(currentUser.getId()));
-            responseBody.add("login", new JsonPrimitive(currentUser.getLogin()));
-            responseBody.add("email", new JsonPrimitive(currentUser.getEmail()));
+            responseBody.add("id", new JsonPrimitive(currUserId));
+            responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
+            responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -126,9 +133,9 @@ public class SignUpServlet extends HttpServlet {
             final long userId = Integer.parseInt(requestUserId);
             final String currentUserSession = request.getSession().getId();
 
-            if (accountService.getUserBySession(userId, currentUserSession)) {
-                throw new Exception("Request from other user");
-            }
+//            if (!accountService.getUserBySession(userId, currentUserSession)) {
+//                throw new Exception("Request from other user");
+//            }
 
             JsonElement message = new JsonObject();
             if (jsonParser.hasNext()) {
@@ -145,7 +152,7 @@ public class SignUpServlet extends HttpServlet {
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            if (!accountService.updateUser(userId, login, password, email)) {
+            if (!dbService.updateUserEmail(userId, email, login, password)) {
                 throw new Exception("User doesn't exist");
             }
             responseBody.add("id", new JsonPrimitive(userId));
@@ -178,8 +185,8 @@ public class SignUpServlet extends HttpServlet {
 
             } else {
                 final long userId = Integer.parseInt(requestUserId);
-                if (!accountService.deleteUser(userId)) {
-                    throw new Exception("user doesnt exist");
+                if (!dbService.deleteUserById(userId)) {
+                    throw new Exception("User doesn\'t exist");
                 }
                 response.setStatus(HttpServletResponse.SC_OK);
             }
