@@ -75,7 +75,10 @@ public class AccountService {
     }
 
     public boolean getUserBySession(Long currentUserId,String sessionId) {
-        final long toChangeUserId = sessions.get(sessionId).getId();
+        final UserProfile incomeUser = sessions.get(sessionId);
+        if (incomeUser == null)
+            return false;
+        final long toChangeUserId = incomeUser.getId();
         return currentUserId.equals(toChangeUserId);
     }
 

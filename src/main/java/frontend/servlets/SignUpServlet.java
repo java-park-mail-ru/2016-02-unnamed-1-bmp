@@ -14,7 +14,6 @@ import java.io.IOException;
 
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
-    private final JsonParser jsonParser = new JsonParser();
 
     public SignUpServlet() {
         this.accountService = AccountService.getInstance();
@@ -24,24 +23,23 @@ public class SignUpServlet extends HttpServlet {
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-
         final BufferedReader bufferedReader = request.getReader();
-        final StringBuilder jsonBuilder = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null)
-            jsonBuilder.append(line);
+        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
 
         try {
-            final JsonObject message = jsonParser.parse(jsonBuilder.toString()).getAsJsonObject();
+            JsonElement message = new JsonObject();
+            if (jsonParser.hasNext()) {
+                message = jsonParser.next();
+            }
 
-            if (message.get("login") == null || message.get("email") == null
-                    || message.get("password") == null) {
+            if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
+                    || message.getAsJsonObject().get("password") == null) {
                 throw new Exception("Not all params send");
             }
 
-            final String login = message.get("login").getAsString();
-            final String email = message.get("email").getAsString();
-            final String password = message.get("password").getAsString();
+            final String login = message.getAsJsonObject().get("login").getAsString();
+            final String email = message.getAsJsonObject().get("email").getAsString();
+            final String password = message.getAsJsonObject().get("password").getAsString();
 
             final UserProfile newUser = accountService.createUser(login, password, email);
 
@@ -55,7 +53,7 @@ public class SignUpServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(newUser.getId()));
             response.setStatus(HttpServletResponse.SC_OK);
 
-        } catch (JsonSyntaxException e) {
+        } catch (JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
@@ -112,11 +110,8 @@ public class SignUpServlet extends HttpServlet {
                       HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
-        final StringBuilder jsonBuilder = new StringBuilder();
-        String line;
-        while ((line = bufferedReader.readLine()) != null)
-            jsonBuilder.append(line);
 
+        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
         try {
             if (request.getPathInfo() == null) {
                 throw new Exception("Wrong request");
@@ -135,15 +130,20 @@ public class SignUpServlet extends HttpServlet {
                 throw new Exception("Request from other user");
             }
 
-            final JsonObject message = jsonParser.parse(jsonBuilder.toString()).getAsJsonObject();
+            JsonElement message = new JsonObject();
+            if (jsonParser.hasNext()) {
+                message = jsonParser.next();
+            }
 
-            if (message.get("login") == null || message.get("email") == null || message.get("password") == null) {
+            if (message.getAsJsonObject().get("login") == null
+                    || message.getAsJsonObject().get("email") == null
+                    || message.getAsJsonObject().get("password") == null) {
                 throw new Exception("Pls enter all params");
             }
 
-            final String login = message.get("login").getAsString();
-            final String email = message.get("email").getAsString();
-            final String password = message.get("password").getAsString();
+            final String login = message.getAsJsonObject().get("login").getAsString();
+            final String email = message.getAsJsonObject().get("email").getAsString();
+            final String password = message.getAsJsonObject().get("password").getAsString();
 
             if (!accountService.updateUser(userId, login, password, email)) {
                 throw new Exception("User doesn't exist");
@@ -151,9 +151,7 @@ public class SignUpServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(userId));
             response.setStatus(HttpServletResponse.SC_OK);
 
-        } catch (JsonSyntaxException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {

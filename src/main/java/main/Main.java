@@ -30,8 +30,8 @@ public class Main {
         final Servlet signUp = new SignUpServlet();
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(signIn), "/api/v1/session");
-        context.addServlet(new ServletHolder(signUp), "/api/v1/user/*");
+        context.addServlet(new ServletHolder(signIn), "/api/session");
+        context.addServlet(new ServletHolder(signUp), "/api/user/*");
 
         final ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setDirectoriesListed(true);
