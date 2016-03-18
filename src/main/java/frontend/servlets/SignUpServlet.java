@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 
 
+@SuppressWarnings("SameParameterValue")
 public class SignUpServlet extends HttpServlet {
     private AccountService accountService;
 
@@ -45,7 +46,6 @@ public class SignUpServlet extends HttpServlet {
 
             if (newUser == null) {
                 throw new Exception("Login already exist");
-
             }
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUser);
@@ -69,27 +69,10 @@ public class SignUpServlet extends HttpServlet {
                       HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
         try {
-            if (request.getPathInfo() == null)
-                throw new Exception("Wrong request");
-
-            final String requestUserId = request.getPathInfo().replace("/", "");
-
-            if (requestUserId == null || !isInteger(requestUserId, 10)) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                throw new Exception("Wrong request");
+            final UserProfile currentUser = checkRequest(request);
+            if(currentUser == null) {
+                throw new Exception("Unknown user");
             }
-
-            final long userDbId = Integer.parseInt(requestUserId);
-            final UserProfile requstedUser = accountService.getUserById(userDbId);
-
-            final String currentSession = request.getSession().getId();
-            final UserProfile currentUser = accountService.getSessions(currentSession);
-
-            if (currentUser == null || !requstedUser.equals(currentUser)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                throw new Exception("Request from wrong user");
-            }
-
             response.setStatus(HttpServletResponse.SC_OK);
             responseBody.add("id", new JsonPrimitive(currentUser.getId()));
             responseBody.add("login", new JsonPrimitive(currentUser.getLogin()));
@@ -113,22 +96,7 @@ public class SignUpServlet extends HttpServlet {
 
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
         try {
-            if (request.getPathInfo() == null) {
-                throw new Exception("Wrong request");
-            }
-
-            final String requestUserId = request.getPathInfo().replace("/", "");
-
-            if (requestUserId == null || !isInteger(requestUserId, 10)) {
-                throw new Exception("Wrong request");
-            }
-
-            final long userId = Integer.parseInt(requestUserId);
-            final String currentUserSession = request.getSession().getId();
-
-            if (accountService.getUserBySession(userId, currentUserSession)) {
-                throw new Exception("Request from other user");
-            }
+            final UserProfile currUser = checkRequest(request);
 
             JsonElement message = new JsonObject();
             if (jsonParser.hasNext()) {
@@ -145,12 +113,11 @@ public class SignUpServlet extends HttpServlet {
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            if (!accountService.updateUser(userId, login, password, email)) {
+            if (currUser == null || !accountService.updateUser(currUser.getId(), login, password, email)) {
                 throw new Exception("User doesn't exist");
             }
-            responseBody.add("id", new JsonPrimitive(userId));
+            responseBody.add("id", new JsonPrimitive(currUser.getId()));
             response.setStatus(HttpServletResponse.SC_OK);
-
         } catch (NumberFormatException | JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -168,21 +135,11 @@ public class SignUpServlet extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
         try {
-            if (request.getPathInfo() == null)
-                throw new Exception("Wrong request");
-
-            final String requestUserId = request.getPathInfo().replace("/", "");
-
-            if (requestUserId == null || !isInteger(requestUserId, 10)) {
-                throw new Exception("Wrong params");
-
-            } else {
-                final long userId = Integer.parseInt(requestUserId);
-                if (!accountService.deleteUser(userId)) {
-                    throw new Exception("user doesnt exist");
-                }
-                response.setStatus(HttpServletResponse.SC_OK);
+            final UserProfile userProfile = checkRequest(request);
+            if (userProfile == null || !accountService.deleteUser(userProfile.getId())) {
+                throw new Exception("user doesnt exist");
             }
+            response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -205,5 +162,21 @@ public class SignUpServlet extends HttpServlet {
             if (Character.digit(s.charAt(i), radix) < 0) return false;
         }
         return true;
+    }
+
+    public UserProfile checkRequest(HttpServletRequest request) throws Exception, NumberFormatException {
+
+        if (request.getPathInfo() == null) throw new Exception("Wrong request");
+
+        final String requestUserId = request.getPathInfo().replace("/", "");
+
+        if (requestUserId == null || !isInteger(requestUserId, 10)) throw new Exception("Wrong request");
+
+        final long userId = Integer.parseInt(requestUserId);
+        final String currentUserSession = request.getSession().getId();
+
+        if (accountService.getUserBySession(userId, currentUserSession)) throw new Exception("Request from other user");
+
+        return accountService.getUserById(userId);
     }
 }
