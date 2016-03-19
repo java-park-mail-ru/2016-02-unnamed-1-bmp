@@ -47,14 +47,17 @@ public class DBServiceImpl implements DBService {
         final Session session = sessionFactory.openSession();
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
+        long returnedId = 0;
         try {
-             if (!dao.save(dataSet)) {
+            returnedId = dao.save(dataSet);
+            if (returnedId == -1) {
                  return false;
              }
         } catch (ConstraintViolationException e) {
             return false;
         }
         transaction.commit();
+        dataSet.setId(returnedId);
         return true;
     }
 
@@ -124,4 +127,5 @@ public class DBServiceImpl implements DBService {
         final ServiceRegistry serviceRegistry = builder.build();
         return configuration.buildSessionFactory(serviceRegistry);
     }
+
 }

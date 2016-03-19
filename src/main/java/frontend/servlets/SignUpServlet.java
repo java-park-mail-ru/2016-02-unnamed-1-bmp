@@ -14,8 +14,12 @@ import java.io.IOException;
 import main.Context;
 import base.DBService;
 import base.datasets.UserDataSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SignUpServlet extends HttpServlet {
+    public static final String PATH = "/api/user/*";
+    private static final Logger LOGGER = LogManager.getLogger();
     private AccountService accountService;
     private DBService dbService;
 
@@ -46,9 +50,10 @@ public class SignUpServlet extends HttpServlet {
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            final boolean newUser = dbService.saveUser(new UserDataSet(login, password, email));
+            final UserDataSet newUser = new UserDataSet(login, password, email);
+            final boolean alreadyExist = dbService.saveUser(newUser);
 
-            if (!newUser) {
+            if (!alreadyExist) {
                 throw new Exception("Login already exist");
             }
 
@@ -126,9 +131,11 @@ public class SignUpServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (NumberFormatException | JsonParseException e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
@@ -149,9 +156,11 @@ public class SignUpServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_OK);
 
         } catch (NumberFormatException e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }

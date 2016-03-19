@@ -17,6 +17,7 @@ import main.Context;
 import base.datasets.UserDataSet;
 
 public class SignInServlet extends HttpServlet {
+    public static final String PATH = "/api/session";
     private static final Logger LOGGER = LogManager.getLogger();
     private AccountService accountService;
     private DBService dbService;
@@ -79,10 +80,12 @@ public class SignInServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(user.getId()));
 
         } catch (JsonParseException e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("wrong json"));
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            LOGGER.error(e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
@@ -98,6 +101,7 @@ public class SignInServlet extends HttpServlet {
         if (!accountService.logout(sessionId)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("This session is not registered"));
+            LOGGER.error("This session is not registered");
 
         } else {
             response.setStatus(HttpServletResponse.SC_OK);

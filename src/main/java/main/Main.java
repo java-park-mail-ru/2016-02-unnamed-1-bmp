@@ -48,6 +48,7 @@ public class Main {
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(signIn), "/api/session");
         context.addServlet(new ServletHolder(signUp), "/api/user/*");
+        LOGGER.info("Created servlets");
 
         final ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setDirectoriesListed(true);

@@ -8,4 +8,6 @@ public interface AccountService {
     boolean logout(String sessionId);
 
     Long getUserIdBySesssion(String sessionId);
+
+    boolean userLoggedIn(String sessionId);
 }

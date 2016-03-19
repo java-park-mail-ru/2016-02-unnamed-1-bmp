@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public class UserDataSetDAO {
@@ -15,16 +16,17 @@ public class UserDataSetDAO {
         this.session = session;
     }
 
-    public boolean save(UserDataSet dataSet) throws ConstraintViolationException  {
+    public long save(UserDataSet dataSet) throws ConstraintViolationException  {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet ifExists =  (UserDataSet) criteria
                 .add(Restrictions.eq("login", dataSet.getLogin())).uniqueResult();
 
         if (ifExists != null){
-            return false;
+            return -1;
         }
         session.save(dataSet);
-        return true;
+        return ((BigInteger) session.createSQLQuery("SELECT LAST_INSERT_ID()")
+                .uniqueResult()).longValue();
     }
 
     public UserDataSet readById (long id) {

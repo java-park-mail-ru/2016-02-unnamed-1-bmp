@@ -26,4 +26,9 @@ public class AccountServiceImpl implements AccountService {
         sessions.remove(sessionId);
         return true;
     }
+
+    @Override
+    public boolean userLoggedIn(String sessionId) {
+        return sessions.get(sessionId) != null;
+    }
 }
