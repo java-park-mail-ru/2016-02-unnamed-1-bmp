@@ -23,7 +23,6 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.Before;
-import org.mockito.internal.stubbing.BaseStubbing;
 
 
 public class SignUpServletTest {
@@ -61,6 +60,7 @@ public class SignUpServletTest {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
+
         final AccountService accountService = mock(AccountServiceImpl.class);
         context.add(AccountService.class, accountService);
 
@@ -82,7 +82,29 @@ public class SignUpServletTest {
 
 
     @Test
-    public void testDoPostFail() throws IOException, ServletException {
+    public void testDoPostEmptyField() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+        final AccountService accountService = mock(AccountServiceImpl.class);
+        context.add(AccountService.class, accountService);
+
+        final String input = "{\"login\":\"admin\",\"password\":\"admin\"}";
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
+
+        when(request.getReader()).thenReturn(bufferedReader);
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Not all params send\""));
+    }
+
+
+
+    @Test
+    public void testDoPostAlreadyExist() throws IOException, ServletException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
@@ -102,8 +124,38 @@ public class SignUpServletTest {
 
 
     @Test
-    public void testDoGet() throws IOException {
+    public void testDoGet() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+        final UserDataSet newUser = mock(UserDataSet.class);
 
+        when(request.getPathInfo()).thenReturn("/1");
+        when(dbService.getUserById(anyLong())).thenReturn(newUser);
+        when(newUser.getId()).thenReturn(1L);
+        when(newUser.getLogin()).thenReturn("admin");
+        when(newUser.getEmail()).thenReturn("admin");
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"id\":1"));
+    }
+
+
+    @Test
+    public void testDoGetNoId() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+
+        when(request.getPathInfo()).thenReturn("");
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doGet(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
 
 
@@ -131,22 +183,36 @@ public class SignUpServletTest {
     }
 
 
+    @Test
+    public void testDoPutWrongId() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+
+        when(request.getPathInfo()).thenReturn("/admin");
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doPut(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+
 
     @Test
-    public void testDoPutFail() throws IOException, ServletException {
+    public void testDoPutNotAllParams() throws IOException, ServletException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
 
         final String input = "{\"login\":\"admin\", \"email\":\"admin@admin.com\"}";
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
-        final UserDataSet newUser = mock(UserDataSet.class);
 
         when(request.getReader()).thenReturn(bufferedReader);
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPut(request, response);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
 
 
@@ -165,6 +231,7 @@ public class SignUpServletTest {
         signUpServlet.doDelete(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertThat(stringWriter.toString(),StringContains.containsString("{}"));
     }
 
 
@@ -187,13 +254,13 @@ public class SignUpServletTest {
 
     @Test
     public void testIsInteger() throws Exception {
-        final boolean ret = SignUpServlet.isInteger("27",10);
+        final boolean ret = SignUpServlet.isInteger("27", 10);
         assertEquals(ret, true);
     }
 
     @Test
     public void testIsIntegerFail() throws Exception {
-        final boolean ret = SignUpServlet.isInteger("lalala",10);
+        final boolean ret = SignUpServlet.isInteger("lalala", 10);
         assertEquals(ret, false);
     }
 

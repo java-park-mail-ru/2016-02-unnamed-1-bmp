@@ -81,7 +81,6 @@ public class SignUpServlet extends HttpServlet {
         final JsonObject responseBody = new JsonObject();
         try {
             final UserDataSet currUser = checkRequest(request);
-
             final Long currUserId = currUser.getId();
 
             response.setStatus(HttpServletResponse.SC_OK);
@@ -90,9 +89,10 @@ public class SignUpServlet extends HttpServlet {
             responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
 
         } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
         response.getWriter().println(responseBody);
@@ -103,11 +103,10 @@ public class SignUpServlet extends HttpServlet {
     public void doPut(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-        final BufferedReader bufferedReader = request.getReader();
-
-        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
         try {
             final UserDataSet currUser = checkRequest(request);
+            final BufferedReader bufferedReader = request.getReader();
+            final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
 
             JsonElement message = new JsonObject();
             if (jsonParser.hasNext()) {
@@ -130,7 +129,7 @@ public class SignUpServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(currUser.getId()));
             response.setStatus(HttpServletResponse.SC_OK);
 
-        } catch (NumberFormatException | JsonParseException e) {
+        } catch (NumberFormatException | JsonParseException | IOException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -183,11 +182,11 @@ public class SignUpServlet extends HttpServlet {
     public UserDataSet checkRequest(HttpServletRequest request) throws Exception, NumberFormatException {
 
         if (request.getPathInfo() == null)
-            throw new Exception("Wrong request");
+            throw new NumberFormatException("Wrong request");
 
         final String requestUserId = request.getPathInfo().replace("/", "");
 
-        if (requestUserId == null || !isInteger(requestUserId, 10)) throw new Exception("Wrong userId");
+        if (requestUserId == null || !isInteger(requestUserId, 10)) throw new NumberFormatException("Wrong userId");
 
         final long userDbId = Integer.parseInt(requestUserId);
 
@@ -198,7 +197,7 @@ public class SignUpServlet extends HttpServlet {
 //                throw new Exception("Request from other user");
 //            }
 
-        if (currUser == null) throw new Exception("No such user");
+        if (currUser == null) throw new Exception("Wrong user");
 
         return  currUser;
     }
