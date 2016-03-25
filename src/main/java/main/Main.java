@@ -19,7 +19,7 @@ import base.AccountService;
 import dbservice.DBServiceImpl;
 
 public class Main {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static final int DEFAULT_PORT = 8080;
 
     @SuppressWarnings("OverlyBroadThrowsClause")

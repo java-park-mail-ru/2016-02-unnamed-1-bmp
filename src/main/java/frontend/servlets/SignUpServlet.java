@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SignUpServlet extends HttpServlet {
     public static final String PATH = "/api/user/*";
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
     private AccountService accountService;
     private DBService dbService;
 
@@ -40,6 +40,7 @@ public class SignUpServlet extends HttpServlet {
                 message = jsonParser.next();
             }
 
+            LOGGER.info("Incoming message: {}", message.toString());
             if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
                     || message.getAsJsonObject().get("password") == null) {
                 throw new Exception("Not all params send");
@@ -62,13 +63,16 @@ public class SignUpServlet extends HttpServlet {
 
             responseBody.add("id", new JsonPrimitive(newUserId));
             response.setStatus(HttpServletResponse.SC_OK);
+            LOGGER.info("Rigister user {}", login);
 
         } catch (JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong JSON"));
+            LOGGER.error("Wrong JSON");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         }
 
         response.getWriter().println(responseBody);
@@ -86,13 +90,16 @@ public class SignUpServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(currUserId));
             responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
             responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
+            LOGGER.info("Get info about user {}", currUser.getLogin());
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error("Tried to get info of unauth");
         }
         response.getWriter().println(responseBody);
     }
@@ -112,6 +119,7 @@ public class SignUpServlet extends HttpServlet {
                 message = jsonParser.next();
             }
 
+            LOGGER.info("Incoming message: {}", message.toString());
             if (message.getAsJsonObject().get("login") == null
                     || message.getAsJsonObject().get("email") == null
                     || message.getAsJsonObject().get("password") == null) {
@@ -127,15 +135,18 @@ public class SignUpServlet extends HttpServlet {
             }
             responseBody.add("id", new JsonPrimitive(currUser.getId()));
             response.setStatus(HttpServletResponse.SC_OK);
+            LOGGER.info("Updated user {} with info: {}", login, email);
 
         } catch (NumberFormatException | JsonParseException | IOException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
+            LOGGER.error("Wrong request");
         } catch (Exception e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         }
 
         response.getWriter().println(responseBody);
@@ -152,15 +163,18 @@ public class SignUpServlet extends HttpServlet {
                 throw new Exception("User doesn\'t exist");
             }
             response.setStatus(HttpServletResponse.SC_OK);
+            LOGGER.info("Deleted user with id {}", currUser.getId());
 
         } catch (NumberFormatException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
+            LOGGER.error("Wrong request");
         } catch (Exception e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error("Tried to delete other user");
         }
         response.getWriter().println(responseBody);
     }
@@ -185,19 +199,14 @@ public class SignUpServlet extends HttpServlet {
 
         final String requestUserId = request.getPathInfo().replace("/", "");
 
-        if (requestUserId == null || !isInteger(requestUserId, 10)) throw new NumberFormatException("Wrong userId");
+        if (requestUserId == null || !isInteger(requestUserId, 10))
+            throw new NumberFormatException("Wrong userId");
 
         final long userDbId = Integer.parseInt(requestUserId);
-
-        final String currentSessionId = request.getSession().getId();
         final UserDataSet currUser = dbService.getUserById(userDbId);
 
-//              in future - for checking original user
-//            if (!accountService.getUserBySession(userId, currentUserSession)) {
-//                throw new Exception("Request from other user");
-//            }
-
-        if (currUser == null) throw new Exception("Wrong user");
+        if (currUser == null)
+            throw new Exception("Wrong user");
 
         return  currUser;
     }

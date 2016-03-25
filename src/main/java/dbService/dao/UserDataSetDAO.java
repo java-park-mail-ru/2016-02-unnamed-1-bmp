@@ -38,6 +38,7 @@ public class UserDataSetDAO {
         return (UserDataSet) criteria.add(Restrictions.eq("email", email)).uniqueResult();
     }
 
+    @SuppressWarnings("JpaQlInspection")
     public boolean deleteById(Long id) {
         final int affected = session.createQuery("UPDATE UserDataSet a SET a.isDeleted= :del WHERE a.id = :id ")
                 .setParameter("del", true)
@@ -46,10 +47,10 @@ public class UserDataSetDAO {
         return affected == 1;
     }
 
+    @SuppressWarnings("JpaQlInspection")
     public boolean updateEmail (Long id, String email, String login, String passw) {
-        final int affected =session.createQuery(new StringBuilder()
-                .append("UPDATE UserDataSet a SET a.email= :emailNew,")
-                .append(" a.login = :log WHERE a.id = :id AND a.password = :pass").toString())
+        final int affected =session.createQuery("UPDATE UserDataSet a SET a.email= :emailNew," +
+                " a.login = :log WHERE a.id = :id AND a.password = :pass")
                 .setParameter("emailNew",email)
                 .setParameter("log", login)
                 .setParameter("log", login)

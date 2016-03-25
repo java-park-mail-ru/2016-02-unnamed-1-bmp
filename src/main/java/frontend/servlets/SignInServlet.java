@@ -18,7 +18,7 @@ import base.datasets.UserDataSet;
 
 public class SignInServlet extends HttpServlet {
     public static final String PATH = "/api/session";
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(SignInServlet.class);
     private AccountService accountService;
     private DBService dbService;
 
@@ -38,9 +38,11 @@ public class SignInServlet extends HttpServlet {
         if (userId != null) {
             response.setStatus(HttpServletResponse.SC_OK);
             responseBody.add("id", new JsonPrimitive(userId));
+            LOGGER.info("Get info about user with id: {}", userId);
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             responseBody.add("error", new JsonPrimitive("User not authorized"));
+            LOGGER.error("Get info of unauth user");
         }
         response.getWriter().println(responseBody);
     }
@@ -78,6 +80,7 @@ public class SignInServlet extends HttpServlet {
 
             response.setStatus(HttpServletResponse.SC_OK);
             responseBody.add("id", new JsonPrimitive(user.getId()));
+            LOGGER.info("Logged in user with id : {}", user.getId());
 
         } catch (JsonParseException e) {
             LOGGER.error(e);
@@ -101,10 +104,11 @@ public class SignInServlet extends HttpServlet {
         if (!accountService.logout(sessionId)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("This session is not registered"));
-            LOGGER.error("This session is not registered");
+            LOGGER.error("Tried to delete not registered session");
 
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
+            LOGGER.info("Deleted user session with sessionid {}", sessionId);
         }
 
         response.getWriter().println(responseBody);

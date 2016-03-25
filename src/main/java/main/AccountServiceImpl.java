@@ -9,15 +9,15 @@ import base.AccountService;
 
 public class AccountServiceImpl implements AccountService {
     private Map<String, Long> sessions = new HashMap<>();
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(AccountServiceImpl.class);
 
     @Override
     public void addSessions(String sessionId, Long userId) {
         if (!sessions.containsKey(sessionId)) {
             sessions.put(sessionId, userId);
-            LOGGER.info("Added logged in user '{}'", userId);
+            LOGGER.info("Added logged in user #{}", userId);
         } else {
-            LOGGER.error("Adding logged in user");
+            LOGGER.error("Fail to log in user");
         }
     }
 
@@ -29,9 +29,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public boolean logout(String sessionId) {
-        if (sessions.get(sessionId) == null)
+        if (sessions.get(sessionId) == null) {
+            LOGGER.error("Fail to log out user");
             return false;
+        }
         sessions.remove(sessionId);
+        LOGGER.info("Logged out user #{}", sessionId);
         return true;
     }
 

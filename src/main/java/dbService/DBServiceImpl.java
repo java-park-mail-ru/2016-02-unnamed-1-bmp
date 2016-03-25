@@ -17,7 +17,7 @@ import org.hibernate.service.spi.ServiceException;
 import java.util.List;
 
 public class DBServiceImpl implements DBService {
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger(DBService.class);
     private SessionFactory sessionFactory;
 
     public DBServiceImpl(Configuration configuration) throws ServiceException {
@@ -54,6 +54,7 @@ public class DBServiceImpl implements DBService {
         }
         transaction.commit();
         dataSet.setId(returnedId);
+        LOGGER.info("Saved user with login {}", dataSet.getLogin());
         return returnedId;
     }
 
@@ -61,6 +62,7 @@ public class DBServiceImpl implements DBService {
     public UserDataSet getUserById(long id) {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
+        LOGGER.info("Get user info with id {}", id);
         return dao.readById(id);
     }
 
@@ -68,6 +70,7 @@ public class DBServiceImpl implements DBService {
     public UserDataSet getUserByEmail(String email) {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
+        LOGGER.info("Get user info with email {}", email);
         return dao.readByEmail(email);
     }
 
@@ -76,6 +79,7 @@ public class DBServiceImpl implements DBService {
     public UserDataSet getUserByLogin(String login) {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
+        LOGGER.info("Get user info with login {}", login);
         return dao.readByLogin(login);
     }
 
@@ -86,9 +90,11 @@ public class DBServiceImpl implements DBService {
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         if(!dao.updateEmail(id, email, login, pass)) {
+            LOGGER.info("Failed to update user #{}", id);
             return false;
         }
         transaction.commit();
+        LOGGER.info("Updated user #{}  with info: {}, {}", id, email, login);
         return true;
     }
 
@@ -98,9 +104,11 @@ public class DBServiceImpl implements DBService {
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         if(!dao.deleteById(id)) {
+            LOGGER.error("Fail to delete user #{}", id);
             return false;
         }
         transaction.commit();
+        LOGGER.info("Deleted user #{}", id);
         return true;
     }
 
@@ -115,6 +123,7 @@ public class DBServiceImpl implements DBService {
     @Override
     public void shutdown() {
         sessionFactory.close();
+        LOGGER.info("Stutdown database connection");
     }
 
     private static SessionFactory createSessionFactory(Configuration configuration) {
