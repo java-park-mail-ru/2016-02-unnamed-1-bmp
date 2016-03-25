@@ -1,8 +1,8 @@
 package frontend.servlets;
 
+import base.AccountService;
+import base.DBService;
 import com.google.gson.*;
-import main.AccountService;
-import main.UserProfile;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,13 +10,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import main.Context;
+import base.datasets.UserDataSet;
 
 public class SignInServlet extends HttpServlet {
+    public static final String PATH = "/api/session";
+    private static final Logger LOGGER = LogManager.getLogger();
     private AccountService accountService;
+    private DBService dbService;
 
-    public SignInServlet() {
-        this.accountService = AccountService.getInstance();
+    public SignInServlet(Context context) {
+        this.dbService = (DBService) context.get(DBService.class);
+        this.accountService = (AccountService) context.get(AccountService.class);
     }
 
     @Override
@@ -25,11 +33,11 @@ public class SignInServlet extends HttpServlet {
         final JsonObject responseBody = new JsonObject();
 
         final String sessionId = request.getSession().getId();
-        final UserProfile user = accountService.getSessions(sessionId);
+        final Long userId = accountService.getUserIdBySesssion(sessionId);
 
-        if (user != null) {
+        if (userId != null) {
             response.setStatus(HttpServletResponse.SC_OK);
-            responseBody.add("id", new JsonPrimitive(user.getId()));
+            responseBody.add("id", new JsonPrimitive(userId));
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             responseBody.add("error", new JsonPrimitive("User not authorized"));
@@ -50,6 +58,8 @@ public class SignInServlet extends HttpServlet {
                 message = jsonParser.next();
             }
 
+            LOGGER.info("Incoming message: {}", message.toString());
+
             if (message.getAsJsonObject().get("login") == null
                     || message.getAsJsonObject().get("password") == null) {
                 throw new Exception("Not all params send");
@@ -58,26 +68,24 @@ public class SignInServlet extends HttpServlet {
             final String login = message.getAsJsonObject().get("login").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            final UserProfile user = accountService.getUser(login);
-            if (user == null) {
-                throw new Exception("No such user");
-            }
-
-            if (!accountService.checkPassword(login, password)) {
-                throw new Exception("Wrong password");
+            final UserDataSet user = dbService.getUserByLogin(login);
+            if (user == null || !password.equals(user.getPassword())) {
+                throw new Exception("Wrong email or password");
             }
 
             final String sessionId = request.getSession().getId();
-            accountService.addSessions(sessionId, user);
+            accountService.addSessions(sessionId, user.getId());
 
             response.setStatus(HttpServletResponse.SC_OK);
             responseBody.add("id", new JsonPrimitive(user.getId()));
 
         } catch (JsonParseException e) {
+            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("wrong json"));
+            responseBody.add("error", new JsonPrimitive("Wrong json"));
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            LOGGER.error(e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
@@ -90,9 +98,10 @@ public class SignInServlet extends HttpServlet {
         final JsonObject responseBody = new JsonObject();
         final String sessionId = request.getSession().getId();
 
-        if (!accountService.deleteUserSession(sessionId)) {
+        if (!accountService.logout(sessionId)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("This session is not registered"));
+            LOGGER.error("This session is not registered");
 
         } else {
             response.setStatus(HttpServletResponse.SC_OK);

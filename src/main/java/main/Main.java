@@ -8,30 +8,43 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import javax.servlet.Servlet;
+import org.hibernate.cfg.Configuration;
 
+
+import base.DBService;
+import base.AccountService;
+import dbservice.DBServiceImpl;
 
 public class Main {
-
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final int DEFAULT_PORT = 8080;
 
     @SuppressWarnings("OverlyBroadThrowsClause")
     public static void main(String[] args) throws Exception {
+
         int port = DEFAULT_PORT;
         if (args.length == 1) {
             final String portString = args[0];
             port = Integer.valueOf(portString);
         }
 
-        System.out.append("Starting at port: ").append(String.valueOf(port)).append('\n');
+        LOGGER.info("Starting server at port {}", String.valueOf(port));
+        final Context classContext = new Context();
 
-        final Servlet signIn = new SignInServlet();
-        final Servlet signUp = new SignUpServlet();
+        final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
+        final DBService dbService = new DBServiceImpl(cfgDb);
+        final AccountService accountService = new AccountServiceImpl();
+
+        classContext.add(DBService.class, dbService);
+        classContext.add(AccountService.class, accountService);
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(signIn), "/api/session");
-        context.addServlet(new ServletHolder(signUp), "/api/user/*");
+        context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
+        context.addServlet(new ServletHolder(new SignUpServlet(classContext)), "/api/user/*");
+        LOGGER.info("Created servlets");
 
         final ResourceHandler resourceHandler = new ResourceHandler();
         resourceHandler.setDirectoriesListed(true);
@@ -45,5 +58,6 @@ public class Main {
 
         server.start();
         server.join();
+        dbService.shutdown();
     }
 }
