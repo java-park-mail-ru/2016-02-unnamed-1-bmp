@@ -3,6 +3,8 @@ package dbservice;
 import base.DBService;
 import base.datasets.UserDataSet;
 import dbservice.dao.UserDataSetDAO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -10,24 +12,18 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.service.spi.ServiceException;
 
 import java.util.List;
 
 public class DBServiceImpl implements DBService {
+    private static final Logger LOGGER = LogManager.getLogger();
     private SessionFactory sessionFactory;
 
-    public DBServiceImpl() {
-        final Configuration configuration = new Configuration();
+    public DBServiceImpl(Configuration configuration) throws ServiceException {
         configuration.addAnnotatedClass(UserDataSet.class);
 
-        configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        configuration.setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        configuration.setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/sea_battle");
-        configuration.setProperty("hibernate.connection.username", "dev");
-        configuration.setProperty("hibernate.connection.password", "12345678");
-        configuration.setProperty("hibernate.show_sql", "true");
-        configuration.setProperty("hibernate.hbm2ddl.auto", "create");
-
+        LOGGER.info("Configuring database...");
         sessionFactory = createSessionFactory(configuration);
     }
 
@@ -43,7 +39,7 @@ public class DBServiceImpl implements DBService {
     }
 
     @Override
-    public boolean saveUser(UserDataSet dataSet) {
+    public long saveUser(UserDataSet dataSet) {
         final Session session = sessionFactory.openSession();
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
@@ -51,14 +47,14 @@ public class DBServiceImpl implements DBService {
         try {
             returnedId = dao.save(dataSet);
             if (returnedId == -1) {
-                 return false;
+                 return -1;
              }
         } catch (ConstraintViolationException e) {
-            return false;
+            return -1;
         }
         transaction.commit();
         dataSet.setId(returnedId);
-        return true;
+        return returnedId;
     }
 
     @Override
@@ -85,7 +81,7 @@ public class DBServiceImpl implements DBService {
 
 
     @Override
-    public boolean updateUserEmail(Long id, String email, String login, String pass) {
+    public boolean updateUserInfo(Long id, String email, String login, String pass) {
         final Session session = sessionFactory.openSession();
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);

@@ -76,7 +76,7 @@ public class SignInServletTest {
     }
 
     @Test
-    public void testDoGetUnAuth() throws IOException, ServletException {
+    public void testDoGetUnauthUser() throws IOException, ServletException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
@@ -117,7 +117,26 @@ public class SignInServletTest {
     }
 
     @Test
-    public void testDoPostWrong() throws IOException, ServletException {
+    public void testDoPostNotAllParams() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+
+        final String input = "{\"login\":\"admin\"}";
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
+
+        when(request.getReader()).thenReturn(bufferedReader);
+
+        final SignInServlet signInServlet = new SignInServlet(context);
+        signInServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Not all params send\"}"));
+    }
+
+
+    @Test
+    public void testDoPostWrongParams() throws IOException, ServletException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
@@ -136,6 +155,23 @@ public class SignInServletTest {
     }
 
     @Test
+    public void testDoPostCantParseJson() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+
+        final String input = "{login\":\"admin\",\"password\":\"admin}";
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
+
+        when(request.getReader()).thenReturn(bufferedReader);
+        final SignInServlet signInServlet = new SignInServlet(context);
+        signInServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Wrong json\"}"));
+    }
+
+    @Test
     public void testDoDelete() throws IOException, ServletException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
@@ -149,5 +185,21 @@ public class SignInServletTest {
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
         assertThat(stringWriter.toString(),StringContains.containsString("{}"));
+    }
+
+    @Test
+    public void testDoDeleteWrong() throws IOException, ServletException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+
+        final String sessionId = request.getSession().getId();
+        when(accountService.logout(sessionId)).thenReturn(false);
+
+        final SignInServlet signInServlet = new SignInServlet(context);
+        signInServlet.doDelete(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"This session is not registered\"}"));
     }
 }

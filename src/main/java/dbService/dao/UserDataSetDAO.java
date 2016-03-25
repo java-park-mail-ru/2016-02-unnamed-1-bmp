@@ -47,8 +47,9 @@ public class UserDataSetDAO {
     }
 
     public boolean updateEmail (Long id, String email, String login, String passw) {
-        final int affected =session.createQuery("UPDATE UserDataSet a SET a.email= :emailNew," +
-                " a.login = :log WHERE a.id = :id AND a.password = :pass")
+        final int affected =session.createQuery(new StringBuilder()
+                .append("UPDATE UserDataSet a SET a.email= :emailNew,")
+                .append(" a.login = :log WHERE a.id = :id AND a.password = :pass").toString())
                 .setParameter("emailNew",email)
                 .setParameter("log", login)
                 .setParameter("log", login)

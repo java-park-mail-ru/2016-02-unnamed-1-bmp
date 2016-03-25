@@ -7,7 +7,7 @@ import java.util.List;
 public interface DBService {
     String getLocalStatus();
 
-    boolean saveUser (UserDataSet dataSet);
+    long saveUser (UserDataSet dataSet);
 
     UserDataSet getUserById (long id);
 
@@ -15,7 +15,7 @@ public interface DBService {
 
     UserDataSet getUserByLogin(String login);
 
-    boolean updateUserEmail(Long id, String email, String login, String pass);
+    boolean updateUserInfo(Long id, String email, String login, String pass);
 
     boolean deleteUserById(Long id);
 

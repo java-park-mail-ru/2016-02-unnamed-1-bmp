@@ -2,7 +2,6 @@ package frontend.servlets;
 
 import base.AccountService;
 import com.google.gson.*;
-import main.AccountServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -51,7 +50,7 @@ public class SignUpServlet extends HttpServlet {
             final String password = message.getAsJsonObject().get("password").getAsString();
 
             final UserDataSet newUser = new UserDataSet(login, password, email);
-            final boolean alreadyExist = dbService.saveUser(newUser);
+            final boolean alreadyExist = dbService.saveUser(newUser) != -1;
 
             if (!alreadyExist) {
                 throw new Exception("Login already exist");
@@ -66,7 +65,7 @@ public class SignUpServlet extends HttpServlet {
 
         } catch (JsonParseException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            responseBody.add("error", new JsonPrimitive("Wrong JSON"));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -116,14 +115,14 @@ public class SignUpServlet extends HttpServlet {
             if (message.getAsJsonObject().get("login") == null
                     || message.getAsJsonObject().get("email") == null
                     || message.getAsJsonObject().get("password") == null) {
-                throw new Exception("Pls enter all params");
+                throw new Exception("Not all params send");
             }
 
             final String login = message.getAsJsonObject().get("login").getAsString();
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            if (!dbService.updateUserEmail(currUser.getId(), email, login, password)) {
+            if (!dbService.updateUserInfo(currUser.getId(), email, login, password)) {
                 throw new Exception("User doesn't exist");
             }
             responseBody.add("id", new JsonPrimitive(currUser.getId()));
@@ -132,10 +131,10 @@ public class SignUpServlet extends HttpServlet {
         } catch (NumberFormatException | JsonParseException | IOException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            responseBody.add("error", new JsonPrimitive("Wrong request"));
         } catch (Exception e) {
             LOGGER.error(e);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
         }
 
@@ -157,7 +156,7 @@ public class SignUpServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            responseBody.add("error", new JsonPrimitive("Wrong request"));
         } catch (Exception e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -193,6 +192,7 @@ public class SignUpServlet extends HttpServlet {
         final String currentSessionId = request.getSession().getId();
         final UserDataSet currUser = dbService.getUserById(userDbId);
 
+//              in future - for checking original user
 //            if (!accountService.getUserBySession(userId, currentUserSession)) {
 //                throw new Exception("Request from other user");
 //            }

@@ -11,13 +11,12 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javax.servlet.Servlet;
+import org.hibernate.cfg.Configuration;
 
 
 import base.DBService;
 import base.AccountService;
 import dbservice.DBServiceImpl;
-
-import java.util.List;
 
 public class Main {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -35,19 +34,16 @@ public class Main {
         LOGGER.info("Starting server at port {}", String.valueOf(port));
         final Context classContext = new Context();
 
-        final DBService dbService = new DBServiceImpl();
+        final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
+        final DBService dbService = new DBServiceImpl(cfgDb);
         final AccountService accountService = new AccountServiceImpl();
 
         classContext.add(DBService.class, dbService);
         classContext.add(AccountService.class, accountService);
 
-
-        final Servlet signIn = new SignInServlet(classContext);
-        final Servlet signUp = new SignUpServlet(classContext);
-
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.addServlet(new ServletHolder(signIn), "/api/session");
-        context.addServlet(new ServletHolder(signUp), "/api/user/*");
+        context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
+        context.addServlet(new ServletHolder(new SignUpServlet(classContext)), "/api/user/*");
         LOGGER.info("Created servlets");
 
         final ResourceHandler resourceHandler = new ResourceHandler();

@@ -82,7 +82,7 @@ public class SignInServlet extends HttpServlet {
         } catch (JsonParseException e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("wrong json"));
+            responseBody.add("error", new JsonPrimitive("Wrong json"));
         } catch (Exception e) {
             LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
