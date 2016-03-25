@@ -83,13 +83,13 @@ public class SignInServlet extends HttpServlet {
             LOGGER.info("Logged in user with id : {}", user.getId());
 
         } catch (JsonParseException e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong json"));
+            LOGGER.error("Wrong json");
         } catch (Exception e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         }
 
         response.getWriter().println(responseBody);
@@ -104,7 +104,7 @@ public class SignInServlet extends HttpServlet {
         if (!accountService.logout(sessionId)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("This session is not registered"));
-            LOGGER.error("Tried to delete not registered session");
+            LOGGER.error("Fail to delete user session");
 
         } else {
             response.setStatus(HttpServletResponse.SC_OK);

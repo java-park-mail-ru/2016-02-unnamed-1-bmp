@@ -47,9 +47,11 @@ public class DBServiceImpl implements DBService {
         try {
             returnedId = dao.save(dataSet);
             if (returnedId == -1) {
-                 return -1;
+                LOGGER.error("Fail to add new user");
+                return -1;
              }
         } catch (ConstraintViolationException e) {
+            LOGGER.error("Wrong request to database");
             return -1;
         }
         transaction.commit();
@@ -90,7 +92,7 @@ public class DBServiceImpl implements DBService {
         final Transaction transaction = session.beginTransaction();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         if(!dao.updateEmail(id, email, login, pass)) {
-            LOGGER.info("Failed to update user #{}", id);
+            LOGGER.error("Failed to update user #{}", id);
             return false;
         }
         transaction.commit();

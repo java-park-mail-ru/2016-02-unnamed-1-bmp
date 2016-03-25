@@ -138,12 +138,10 @@ public class SignUpServlet extends HttpServlet {
             LOGGER.info("Updated user {} with info: {}", login, email);
 
         } catch (NumberFormatException | JsonParseException | IOException e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
             LOGGER.error("Wrong request");
         } catch (Exception e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
             LOGGER.error(e.getMessage());
@@ -166,15 +164,13 @@ public class SignUpServlet extends HttpServlet {
             LOGGER.info("Deleted user with id {}", currUser.getId());
 
         } catch (NumberFormatException e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
             LOGGER.error("Wrong request");
         } catch (Exception e) {
-            LOGGER.error(e);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
-            LOGGER.error("Tried to delete other user");
+            LOGGER.error(e.getMessage());
         }
         response.getWriter().println(responseBody);
     }
@@ -200,13 +196,13 @@ public class SignUpServlet extends HttpServlet {
         final String requestUserId = request.getPathInfo().replace("/", "");
 
         if (requestUserId == null || !isInteger(requestUserId, 10))
-            throw new NumberFormatException("Wrong userId");
+            throw new NumberFormatException("Wrong incoming userId");
 
         final long userDbId = Integer.parseInt(requestUserId);
         final UserDataSet currUser = dbService.getUserById(userDbId);
 
         if (currUser == null)
-            throw new Exception("Wrong user");
+            throw new Exception("User doesn\'t exist");
 
         return  currUser;
     }
