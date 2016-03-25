@@ -1,6 +1,5 @@
 target
 *.class
-*.iml
 .mtj.tmp/
 *.jar
 *.war
