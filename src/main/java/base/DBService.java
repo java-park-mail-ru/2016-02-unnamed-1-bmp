@@ -5,7 +5,6 @@ import base.datasets.UserDataSet;
 import java.util.List;
 
 public interface DBService {
-    String getLocalStatus();
 
     long saveUser (UserDataSet dataSet);
 

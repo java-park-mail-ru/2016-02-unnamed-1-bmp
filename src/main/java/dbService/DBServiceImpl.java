@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.resource.transaction.spi.TransactionStatus;
@@ -31,30 +30,20 @@ public class DBServiceImpl implements DBService {
     }
 
     @Override
-    public String getLocalStatus() {
-        final String status;
-        try (Session session = sessionFactory.openSession()) {
-            final Transaction transaction = session.beginTransaction();
-            status = transaction.getStatus().toString();
-            transaction.commit();
-        }
-        return status;
-    }
-
-    @Override
     public long saveUser(UserDataSet dataSet) {
         final Session session = sessionFactory.openSession();
-        long returnedId = 0L;
         try {
             session.getTransaction().begin();
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            returnedId = dao.save(dataSet);
+            final long returnedId = dao.save(dataSet);
             if (returnedId == -1) {
                 LOGGER.error("Fail to add new user");
                 return -1;
              }
             session.getTransaction().commit();
             dataSet.setId(returnedId);
+            LOGGER.info("Saved user with login {}", dataSet.getLogin());
+            return returnedId;
         } catch (ConstraintViolationException e) {
             LOGGER.error("Wrong request to database");
             return -1;
@@ -65,9 +54,9 @@ public class DBServiceImpl implements DBService {
             }
             LOGGER.error("Fail to perform a transaction");
             return -1;
+        } finally {
+            session.close();
         }
-        LOGGER.info("Saved user with login {}", dataSet.getLogin());
-        return returnedId;
     }
 
     @Override
@@ -75,7 +64,9 @@ public class DBServiceImpl implements DBService {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         LOGGER.info("Get user info with id {}", id);
-        return dao.readById(id);
+        final UserDataSet currUser =  dao.readById(id);
+        session.close();
+        return currUser;
     }
 
     @Override
@@ -83,7 +74,9 @@ public class DBServiceImpl implements DBService {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         LOGGER.info("Get user info with email {}", email);
-        return dao.readByEmail(email);
+        final UserDataSet currUser = dao.readByEmail(email);
+        session.close();
+        return currUser;
     }
 
 
@@ -92,7 +85,9 @@ public class DBServiceImpl implements DBService {
         final Session session = sessionFactory.openSession();
         final UserDataSetDAO dao = new UserDataSetDAO(session);
         LOGGER.info("Get user info with login {}", login);
-        return dao.readByLogin(login);
+        final UserDataSet currUser = dao.readByLogin(login);
+        session.close();
+        return currUser;
     }
 
 
@@ -107,6 +102,8 @@ public class DBServiceImpl implements DBService {
                 return false;
             }
             session.getTransaction().commit();
+            LOGGER.info( "Updated user #{}  with info: {}, {}", id, email, login);
+            return true;
         } catch ( RuntimeException e ) {
             if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
                     || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
@@ -114,9 +111,9 @@ public class DBServiceImpl implements DBService {
             }
             LOGGER.error("Failed to perform a transaction");
             return false;
+        } finally {
+            session.close();
         }
-        LOGGER.info( "Updated user #{}  with info: {}, {}", id, email, login);
-        return true;
     }
 
     @Override
@@ -130,6 +127,8 @@ public class DBServiceImpl implements DBService {
                 return false;
             }
             session.getTransaction().commit();
+            LOGGER.info("Deleted user #{}", id);
+            return true;
         } catch ( RuntimeException e ) {
             if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
                     || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
@@ -137,9 +136,9 @@ public class DBServiceImpl implements DBService {
             }
             LOGGER.error("Fail to perform a transaction");
             return false;
+        } finally {
+            session.close();
         }
-        LOGGER.info("Deleted user #{}", id);
-        return true;
     }
 
     @Override
