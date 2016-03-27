@@ -22,7 +22,7 @@ public class DBServiceImpl implements DBService {
     private static final Logger LOGGER = LogManager.getLogger(DBService.class);
     private SessionFactory sessionFactory;
 
-    public DBServiceImpl(Configuration configuration) throws ServiceException {
+    public DBServiceImpl(Configuration configuration) throws HibernateException {
         configuration.addAnnotatedClass(UserDataSet.class);
 
         LOGGER.info("Configuring database...");
@@ -160,7 +160,8 @@ public class DBServiceImpl implements DBService {
         LOGGER.info("Stutdown database connection");
     }
 
-    private static SessionFactory createSessionFactory(Configuration configuration) {
+
+    private static SessionFactory createSessionFactory(Configuration configuration) throws HibernateException {
         final StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         builder.applySettings(configuration.getProperties());
         final ServiceRegistry serviceRegistry = builder.build();

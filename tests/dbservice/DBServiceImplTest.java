@@ -22,7 +22,7 @@ public class DBServiceImplTest {
 
     @Before
     public void toSet() {
-        dbService = new DBServiceImpl(new Configuration().configure("h2config.xml"));
+        dbService = new DBServiceImpl(new Configuration().configure("dbconfig.xml"));
     }
 
     @After
