@@ -1,6 +1,7 @@
 package frontend.servlets;
 
 import base.AccountService;
+import base.UserService;
 import com.google.gson.*;
 
 import javax.servlet.ServletException;
@@ -20,10 +21,10 @@ public class SignUpServlet extends HttpServlet {
     public static final String PATH = "/api/user/*";
     private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
     private AccountService accountService;
-    private DBService dbService;
+    private UserService userService;
 
     public SignUpServlet(Context context) {
-        this.dbService = (DBService) context.get(DBService.class);
+        this.userService = (UserService) context.get(UserService.class);
         this.accountService = (AccountService) context.get(AccountService.class);
     }
 
@@ -51,14 +52,14 @@ public class SignUpServlet extends HttpServlet {
             final String password = message.getAsJsonObject().get("password").getAsString();
 
             final UserDataSet newUser = new UserDataSet(login, password, email);
-            final boolean alreadyExist = dbService.saveUser(newUser) != -1;
+            final boolean alreadyExist = userService.saveUser(newUser) != -1;
 
             if (!alreadyExist) {
                 throw new Exception("Login already exist");
             }
 
             final String sessionId = request.getSession().getId();
-            final Long newUserId = dbService.getUserByLogin(login).getId();
+            final Long newUserId = userService.getUserByLogin(login).getId();
             accountService.addSessions(sessionId, newUserId);
 
             responseBody.add("id", new JsonPrimitive(newUserId));
@@ -130,7 +131,7 @@ public class SignUpServlet extends HttpServlet {
             final String email = message.getAsJsonObject().get("email").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            if (!dbService.updateUserInfo(currUser.getId(), email, login, password)) {
+            if (!userService.updateUserInfo(currUser.getId(), email, login, password)) {
                 throw new Exception("User doesn't exist");
             }
             responseBody.add("id", new JsonPrimitive(currUser.getId()));
@@ -157,7 +158,7 @@ public class SignUpServlet extends HttpServlet {
         final JsonObject responseBody = new JsonObject();
         try {
             final UserDataSet currUser = checkRequest(request);
-            if (!dbService.deleteUserById(currUser.getId())) {
+            if (!userService.deleteUserById(currUser.getId())) {
                 throw new Exception("User doesn\'t exist");
             }
             response.setStatus(HttpServletResponse.SC_OK);
@@ -199,7 +200,7 @@ public class SignUpServlet extends HttpServlet {
             throw new NumberFormatException("Wrong incoming userId");
 
         final long userDbId = Integer.parseInt(requestUserId);
-        final UserDataSet currUser = dbService.getUserById(userDbId);
+        final UserDataSet currUser = userService.getUserById(userDbId);
 
         if (currUser == null)
             throw new Exception("User doesn\'t exist");

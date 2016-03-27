@@ -1,5 +1,7 @@
 package main;
 
+import base.UserService;
+import dbservice.UserServiceImpl;
 import frontend.servlets.SignInServlet;
 import frontend.servlets.SignUpServlet;
 import org.eclipse.jetty.server.Handler;
@@ -40,9 +42,10 @@ public class Main {
         final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
         try {
             final DBService dbService = new DBServiceImpl(cfgDb);
+            final UserService userService = new UserServiceImpl(dbService);
             final AccountService accountService = new AccountServiceImpl();
 
-            classContext.add(DBService.class, dbService);
+            classContext.add(UserService.class, userService);
             classContext.add(AccountService.class, accountService);
 
             final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -61,7 +64,6 @@ public class Main {
             server.setHandler(handlers);
             server.start();
             server.join();
-            dbService.shutdown();
         } catch (HibernateException e) {
             LOGGER.info("Fail to connect to DB");
         }

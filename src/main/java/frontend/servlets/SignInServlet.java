@@ -2,6 +2,7 @@ package frontend.servlets;
 
 import base.AccountService;
 import base.DBService;
+import base.UserService;
 import com.google.gson.*;
 
 import javax.servlet.ServletException;
@@ -20,10 +21,10 @@ public class SignInServlet extends HttpServlet {
     public static final String PATH = "/api/session";
     private static final Logger LOGGER = LogManager.getLogger(SignInServlet.class);
     private AccountService accountService;
-    private DBService dbService;
+    private UserService userService;
 
     public SignInServlet(Context context) {
-        this.dbService = (DBService) context.get(DBService.class);
+        this.userService = (UserService) context.get(UserService.class);
         this.accountService = (AccountService) context.get(AccountService.class);
     }
 
@@ -70,7 +71,7 @@ public class SignInServlet extends HttpServlet {
             final String login = message.getAsJsonObject().get("login").getAsString();
             final String password = message.getAsJsonObject().get("password").getAsString();
 
-            final UserDataSet user = dbService.getUserByLogin(login);
+            final UserDataSet user = userService.getUserByLogin(login);
             if (user == null || !password.equals(user.getPassword())) {
                 throw new Exception("Wrong email or password");
             }
