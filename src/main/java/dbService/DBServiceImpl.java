@@ -5,7 +5,6 @@ import base.HibernateUnit;
 import base.datasets.UserDataSet;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
-import main.Context;
 import main.LaunchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,7 +31,7 @@ public class DBServiceImpl implements DBService {
             final ServiceRegistry serviceRegistry = builder.build();
             sessionFactory = configuration.buildSessionFactory(serviceRegistry);
         } catch (HibernateException e) {
-            throw new LaunchException();
+            throw new LaunchException("Failed to create hibernate session factory", e);
         }
     }
 
@@ -50,7 +49,7 @@ public class DBServiceImpl implements DBService {
                     || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
                 session.getTransaction().rollback();
             }
-            throw new DatabaseException();
+            throw new DatabaseException(e);
         } finally {
             session.close();
         }

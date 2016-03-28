@@ -90,10 +90,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDataSet> getAllUsers() throws DatabaseException {
+    public List<UserDataSet> getUsers(boolean getAll) throws DatabaseException {
         return dbService.doReturningWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            return dao.readAll();
+            return dao.readAll(getAll);
         });
     }
 

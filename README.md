@@ -1,32 +1,20 @@
 # 2016-02-unnamed-1-bmp
 Азартная игра "Морской бой"
 
-## Структура src/main/java
-```
-──src
-   └── main
-       └── java
-           ├── base
-           │   ├── AccountService.java
-           │   ├── DBService.java
-           │   ├── HibernateUnit.java
-           │   ├── UserService.java
-           │   └── datasets
-           │       └── UserDataSet.java
-           ├── dbservice
-           │   ├── DBServiceImpl.java
-           │   ├── DatabaseException.java
-           │   ├── UserServiceImpl.java
-           │   └── dao
-           │       └── UserDataSetDAO.java
-           ├── frontend
-           │   └── servlets
-           │       ├── SignInServlet.java
-           │       └── SignUpServlet.java
-           └── main
-               ├── AccountServiceImpl.java
-               ├── Context.java
-               ├── LaunchException.java
-               └── Main.java
+## Usage
+You should have installed: intelij idea 15, JDK 8, maven
 
+1. Clone the repo:
+```
+git clone https://github.com/java-park-mail-ru/2016-02-unnamed-1-bmp.git
+```
+2. Mark folders setups and scr as sources
+
+3. Build project from root directory
+```
+mvn compile assembly:single
+```
+4. Run project
+```
+java -jar target/seaFight-1.0-jar-with-dependencies.jar
 ```

@@ -19,5 +19,5 @@ public interface UserService {
 
     boolean deleteUserById(Long id) throws DatabaseException;
 
-    List<UserDataSet> getAllUsers() throws DatabaseException;
+    List<UserDataSet> getUsers(boolean allUsers) throws DatabaseException;
 }

@@ -28,7 +28,10 @@ public class UserDataSetDAO {
     }
 
     public UserDataSet readById (long id) {
-        return session.get(UserDataSet.class, id);
+        final Criteria criteria = session.createCriteria(UserDataSet.class);
+        return (UserDataSet) criteria
+                .add(Restrictions.eq("isDeleted", false))
+                .add(Restrictions.eq("id", id)).uniqueResult();
     }
 
     public UserDataSet readByEmail(String email) {
@@ -62,8 +65,11 @@ public class UserDataSetDAO {
     }
 
     @SuppressWarnings("unchecked")
-    public List<UserDataSet> readAll() {
+    public List<UserDataSet> readAll(boolean skipDeleted) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
+        if (skipDeleted) {
+            criteria.add(Restrictions.eq("isDeleted", false));
+        }
         return (List<UserDataSet>) criteria.list();
     }
 

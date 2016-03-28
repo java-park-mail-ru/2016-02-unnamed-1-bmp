@@ -22,6 +22,8 @@ import base.DBService;
 import base.AccountService;
 import dbservice.DBServiceImpl;
 
+import java.util.Arrays;
+
 public class Main {
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static final int DEFAULT_PORT = 8080;
@@ -65,7 +67,8 @@ public class Main {
             server.join();
 
         } catch (LaunchException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getError());
+            LOGGER.error(e.getHibernateException().getMessage());
         }
     }
 }

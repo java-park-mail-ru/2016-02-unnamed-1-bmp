@@ -77,6 +77,7 @@ public class UserServiceImplTest {
     public void testDeleteUserById() throws DatabaseException {
         final long newId = userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
         assertTrue(userService.deleteUserById(newId));
+        assertTrue(userService.getUserById(newId) == null);
     }
 
     @Test

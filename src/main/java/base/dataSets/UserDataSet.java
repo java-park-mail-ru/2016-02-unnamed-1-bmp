@@ -6,7 +6,11 @@ import java.io.Serializable;
 import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name= "users")
+@Table(name= "users", indexes = {
+        @Index(name="deleted_idx", columnList = "user_is_del"),
+        @Index(name="login_idx", columnList = "user_login," + "user_is_del"),
+        @Index(name="email_idx", columnList = "user_email," + "user_is_del")
+})
 public class UserDataSet implements Serializable {
 
     @Id
