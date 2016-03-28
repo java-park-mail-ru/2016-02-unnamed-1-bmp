@@ -9,7 +9,7 @@ git clone https://github.com/java-park-mail-ru/2016-02-unnamed-1-bmp.git
 ```
 Step 3. Open the project in IJ. Mark folders setups and scr as sources.
 
-Step 4. Build project from root directory
+Step 4. Build project from its root directory
 ```
 mvn compile assembly:single
 ```
