@@ -38,7 +38,6 @@ public class Main {
 
         LOGGER.info("Starting server at port {}", String.valueOf(port));
         final Context classContext = new Context();
-
         final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
         try {
             final DBService dbService = new DBServiceImpl(cfgDb);
@@ -64,8 +63,9 @@ public class Main {
             server.setHandler(handlers);
             server.start();
             server.join();
-        } catch (HibernateException e) {
-            LOGGER.info("Fail to connect to DB");
+
+        } catch (LaunchException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 }

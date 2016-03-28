@@ -5,6 +5,8 @@ import base.HibernateUnit;
 import base.datasets.UserDataSet;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
+import main.Context;
+import main.LaunchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
@@ -20,14 +22,18 @@ public class DBServiceImpl implements DBService {
     private SessionFactory sessionFactory;
     private static final Logger LOGGER = LogManager.getLogger(DBServiceImpl.class);
 
-    public DBServiceImpl(Configuration configuration) throws HibernateException {
+    public DBServiceImpl(Configuration configuration) throws HibernateException, LaunchException {
         configuration.addAnnotatedClass(UserDataSet.class);
 
         LOGGER.info("Configuring database...");
         final StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder();
         builder.applySettings(configuration.getProperties());
-        final ServiceRegistry serviceRegistry = builder.build();
-        sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        try {
+            final ServiceRegistry serviceRegistry = builder.build();
+            sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        } catch (HibernateException e) {
+            throw new LaunchException();
+        }
     }
 
     @Override
@@ -44,7 +50,7 @@ public class DBServiceImpl implements DBService {
                     || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
                 session.getTransaction().rollback();
             }
-            throw new DatabaseException("Fail to perform db transaction");
+            throw new DatabaseException();
         } finally {
             session.close();
         }

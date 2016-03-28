@@ -11,8 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import dbservice.DatabaseException;
 import main.Context;
-import base.DBService;
 import base.datasets.UserDataSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,6 +70,10 @@ public class SignUpServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong JSON"));
             LOGGER.error("Wrong JSON");
+        } catch (DatabaseException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -95,6 +99,10 @@ public class SignUpServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
+        } catch (DatabaseException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
             LOGGER.error(e.getMessage());
         } catch (Exception e) {
@@ -142,6 +150,10 @@ public class SignUpServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
             LOGGER.error("Wrong request");
+        } catch (DatabaseException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error("Wrong request");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -168,6 +180,10 @@ public class SignUpServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
             LOGGER.error("Wrong request");
+        } catch (DatabaseException e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            LOGGER.error(e.getMessage());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
@@ -189,7 +205,7 @@ public class SignUpServlet extends HttpServlet {
         return true;
     }
 
-    public UserDataSet checkRequest(HttpServletRequest request) throws Exception, NumberFormatException {
+    public UserDataSet checkRequest(HttpServletRequest request) throws Exception, NumberFormatException, DatabaseException {
 
         if (request.getPathInfo() == null)
             throw new NumberFormatException("Wrong request");

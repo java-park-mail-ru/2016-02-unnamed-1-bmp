@@ -1,10 +1,12 @@
 package frontend.servlets;
 
+import base.UserService;
 import base.datasets.UserDataSet;
+import dbservice.DatabaseException;
+import dbservice.UserServiceImpl;
+import main.LaunchException;
 import org.hamcrest.core.StringContains;
 import base.AccountService;
-import base.DBService;
-import dbservice.DBServiceImpl;
 import main.AccountServiceImpl;
 import main.Context;
 
@@ -22,13 +24,14 @@ import org.apache.commons.io.IOUtils;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+import org.hibernate.cfg.Configuration;
 import org.junit.Test;
 import org.junit.Before;
 
 public class SignInServletTest {
+    private UserService userService;
     private AccountService accountService;
     private Context context;
-    private DBService dbService;
 
     private HttpServletResponse getMockedResponse(StringWriter stringWriter) throws IOException {
         final HttpServletResponse response = mock(HttpServletResponse.class);
@@ -49,13 +52,13 @@ public class SignInServletTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws LaunchException {
         accountService = mock(AccountServiceImpl.class);
-        dbService = mock(DBServiceImpl.class);
+        userService = mock(UserServiceImpl.class);
 
         context  = new Context();
         context.add(AccountService.class, accountService);
-        context.add(DBService.class, dbService);
+        context.add(UserService.class, userService);
     }
 
     @Test
@@ -93,7 +96,7 @@ public class SignInServletTest {
 
 
     @Test
-    public void testDoPost() throws IOException, ServletException {
+    public void testDoPost() throws IOException, ServletException, DatabaseException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
@@ -103,7 +106,7 @@ public class SignInServletTest {
         final UserDataSet newUser = mock(UserDataSet.class);
 
         when(request.getReader()).thenReturn(bufferedReader);
-        when(dbService.getUserByLogin("admin")).thenReturn(newUser);
+        when(userService.getUserByLogin("admin")).thenReturn(newUser);
         when(newUser.getPassword()).thenReturn("admin");
         when(newUser.getId()).thenReturn(1L);
 
@@ -136,7 +139,7 @@ public class SignInServletTest {
 
 
     @Test
-    public void testDoPostWrongParams() throws IOException, ServletException {
+    public void testDoPostWrongParams() throws IOException, ServletException, DatabaseException {
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
@@ -145,7 +148,7 @@ public class SignInServletTest {
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
 
         when(request.getReader()).thenReturn(bufferedReader);
-        when(dbService.getUserByLogin("admin")).thenReturn(null);
+        when(userService.getUserByLogin("admin")).thenReturn(null);
 
         final SignInServlet signInServlet = new SignInServlet(context);
         signInServlet.doPost(request, response);

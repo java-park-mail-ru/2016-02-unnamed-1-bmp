@@ -3,22 +3,30 @@
 
 ## Структура src/main/java
 ```
-java
-  ├── base
-  │   ├── datasets
-  │   │   └── UserDataSet
-  │   ├── AccountService
-  │   └── DBService
-  ├── dbservice
-  │   ├── dao
-  │   │   └── UserDataSetDAO
-  │   └── DBServiceImpl
-  ├── frontend
-  │   └── servlets
-  │       ├── SignInServlet
-  │       └── SignUpServlet
-  └── main
-      ├── AccountServiceImpl
-      ├── Context
-      └── Main
+──src
+   └── main
+       └── java
+           ├── base
+           │   ├── AccountService.java
+           │   ├── DBService.java
+           │   ├── HibernateUnit.java
+           │   ├── UserService.java
+           │   └── datasets
+           │       └── UserDataSet.java
+           ├── dbservice
+           │   ├── DBServiceImpl.java
+           │   ├── DatabaseException.java
+           │   ├── UserServiceImpl.java
+           │   └── dao
+           │       └── UserDataSetDAO.java
+           ├── frontend
+           │   └── servlets
+           │       ├── SignInServlet.java
+           │       └── SignUpServlet.java
+           └── main
+               ├── AccountServiceImpl.java
+               ├── Context.java
+               ├── LaunchException.java
+               └── Main.java
+
 ```

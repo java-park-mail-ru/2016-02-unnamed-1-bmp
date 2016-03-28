@@ -1,19 +1,21 @@
 import dbservice.DBServiceImpl;
-//import frontend.servlets.SignInServletTest;
-//import frontend.servlets.SignUpServletTest;
+import dbservice.UserServiceImplTest;
+import frontend.servlets.SignInServletTest;
+import frontend.servlets.SignUpServletTest;
 import main.AccountServiceImplTest;
-//import dbservice.DBServiceImplTest;
 
+import main.ContextTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-//        SignInServletTest.class,
-//        SignUpServletTest.class,
+        SignInServletTest.class,
+        SignUpServletTest.class,
         AccountServiceImplTest.class,
-//        DBServiceImplTest.class
+        UserServiceImplTest.class,
+        ContextTest.class
 })
 
 public class JunitTestSuite {
