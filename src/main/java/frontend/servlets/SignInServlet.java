@@ -92,7 +92,7 @@ public class SignInServlet extends HttpServlet {
         } catch (DatabaseException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage() + e.getRuntimeException().getMessage());
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive(e.getMessage()));
