@@ -15,12 +15,8 @@ public class UserDataSetDAO {
         this.session = session;
     }
 
-    public long save(UserDataSet dataSet) {
-        if ( !checkUniqueLogin(dataSet.getLogin()) || !checkUniqueEmail(dataSet.getEmail()) ){
-            return -1;
-        }
+    public void save(UserDataSet dataSet) {
         session.save(dataSet);
-        return dataSet.getId();
     }
 
     public UserDataSet readById (long id) {
@@ -49,13 +45,12 @@ public class UserDataSetDAO {
     }
 
     @SuppressWarnings("JpaQlInspection")
-    public boolean updateUserInfo(Long id, String email, String login, String passw) {
-        if ( !checkUniqueLogin(login) || !checkUniqueEmail(email) ){
+    public boolean updateUserInfo(Long id, String login, String passw) {
+        if ( !checkUniqueLogin(login) ){
             return false;
         }
-        final int affected = session.createQuery("UPDATE UserDataSet a SET a.email= :emailNew," +
-                " a.login = :log, a.password = :pass WHERE a.id = :id AND a.isDeleted = :isDel")
-                .setParameter("emailNew",email)
+        final int affected = session.createQuery("UPDATE UserDataSet a SET " +
+                "a.login = :log, a.password = :pass WHERE a.id = :id AND a.isDeleted = :isDel")
                 .setParameter("log", login)
                 .setParameter("pass", passw)
                 .setParameter("id", id)
@@ -81,20 +76,18 @@ public class UserDataSetDAO {
         return (List<UserDataSet>) criteria.list();
     }
 
-    private boolean checkUniqueLogin(String login) {
+    public boolean checkUniqueLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("login", login))
-                .add(Restrictions.eq("isDeleted", false))
                 .uniqueResult();
         return userExist == null;
     }
 
-    private boolean checkUniqueEmail(String email) {
+    public boolean checkUniqueEmail(String email) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("email", email))
-                .add(Restrictions.eq("isDeleted", false))
                 .uniqueResult();
         return userExist == null;
     }

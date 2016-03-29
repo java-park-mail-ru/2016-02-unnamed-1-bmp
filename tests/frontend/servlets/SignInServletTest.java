@@ -134,7 +134,6 @@ public class SignInServletTest {
         signInServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Not all params send\"}"));
     }
 
 
@@ -154,7 +153,6 @@ public class SignInServletTest {
         signInServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Wrong email or password\"}"));
     }
 
     @Test
@@ -203,6 +201,6 @@ public class SignInServletTest {
         signInServlet.doDelete(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"This session is not registered\"}"));
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Fail to delete user session\"}"));
     }
 }
