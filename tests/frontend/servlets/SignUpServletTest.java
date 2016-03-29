@@ -37,22 +37,16 @@ public class SignUpServletTest {
     private HttpServletResponse getMockedResponse(StringWriter stringWriter) throws IOException {
         final HttpServletResponse response = mock(HttpServletResponse.class);
         final PrintWriter writer = new PrintWriter(stringWriter);
-
         when(response.getWriter()).thenReturn(writer);
-
         return response;
     }
-
 
     private HttpServletRequest getMockedRequest() {
         final HttpSession httpSession = mock(HttpSession.class);
         final HttpServletRequest request = mock(HttpServletRequest.class);
-
         when(request.getSession()).thenReturn(httpSession);
-
         return request;
     }
-
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +54,6 @@ public class SignUpServletTest {
         userService = mock(UserServiceImpl.class);
         context.add(UserService.class, userService);
     }
-
 
     @Test
     public void testDoPost() throws IOException, ServletException, DatabaseException {
@@ -77,7 +70,7 @@ public class SignUpServletTest {
 
         when(request.getReader()).thenReturn(bufferedReader);
         when(userService.getUserByLogin("admin")).thenReturn(newUser);
-        when(userService.saveUser(any(UserDataSet.class))).thenReturn(1L);
+        when(userService.saveUser(any(UserDataSet.class))).thenReturn(true);
         when(newUser.getId()).thenReturn(1L);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
@@ -118,7 +111,7 @@ public class SignUpServletTest {
         final AccountService accountService = mock(AccountServiceImpl.class);
         context.add(AccountService.class, accountService);
 
-        final String input = "{\"login\":\"admin\",\"password\":\"admin\"}";
+        final String input = "{\"login\":\"admin\"}";
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
 
         when(request.getReader()).thenReturn(bufferedReader);
@@ -126,8 +119,7 @@ public class SignUpServletTest {
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPost(request, response);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Not all params send\""));
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
 
 
@@ -141,13 +133,12 @@ public class SignUpServletTest {
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
 
         when(request.getReader()).thenReturn(bufferedReader);
-        when(userService.saveUser(any(UserDataSet.class))).thenReturn(-1L);
+        when(userService.saveUser(any(UserDataSet.class))).thenReturn(false);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Login already exist\""));
     }
 
 
@@ -193,14 +184,14 @@ public class SignUpServletTest {
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
 
-        final String input = "{\"login\":\"admin\",\"password\":\"admin\", \"email\":\"admin@admin.com\"}";
+        final String input = "{\"login\":\"admin\",\"password\":\"admin\"}";
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
         final UserDataSet newUser = mock(UserDataSet.class);
 
         when(request.getReader()).thenReturn(bufferedReader);
         when(request.getPathInfo()).thenReturn("/1");
         when(newUser.getId()).thenReturn(1L);
-        when(userService.updateUserInfo(anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
+        when(userService.updateUserInfo(anyLong(),  anyString(), anyString())).thenReturn(true);
         when(userService.getUserById(1L)).thenReturn(newUser);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
@@ -232,21 +223,20 @@ public class SignUpServletTest {
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
 
-        final String input = "{\"login\":\"admin\", \"email\":\"admin@admin.com\"}";
+        final String input = "{\"login\":\"admin\",\"pass\":\"admin\"}";
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
         final UserDataSet newUser = mock(UserDataSet.class);
 
         when(request.getReader()).thenReturn(bufferedReader);
         when(request.getPathInfo()).thenReturn("/1");
         when(newUser.getId()).thenReturn(1L);
-        when(userService.updateUserInfo(anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
+        when(userService.updateUserInfo(anyLong(),  anyString(), anyString())).thenReturn(true);
         when(userService.getUserById(1L)).thenReturn(newUser);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPut(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Not all params send\""));
     }
 
 
@@ -283,7 +273,7 @@ public class SignUpServletTest {
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doDelete(request, response);
 
-        verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+        verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
 
 

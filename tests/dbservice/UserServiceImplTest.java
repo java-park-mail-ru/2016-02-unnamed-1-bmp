@@ -35,52 +35,30 @@ public class UserServiceImplTest {
     @Test
     public void testSaveUser() throws DatabaseException {
         final UserDataSetDAO dao = mock(UserDataSetDAO.class);
-        when(dao.save(any())).thenReturn(1L);
-        assertTrue(userService.saveUser(new UserDataSet(anyString(), anyString(), anyString())) != -1);
+        assertTrue(userService.saveUser(new UserDataSet(anyString(),anyString(), anyString())));
     }
 
     @Test
     public void testSaveUserDoubleLogin() throws DatabaseException {
-        final long newId = userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
-        assertTrue(userService.saveUser(new UserDataSet("admin", "adminNew", "adminNew@admin.com")) == -1);
+        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
+        assertFalse(userService.saveUser(new UserDataSet("admin", "adminNew", "adminNew@admin.com")));
     }
 
-    @Test
-    public void testGetUserById() throws DatabaseException {
-        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
-        final long addedId = userService.saveUser(userDataSet);
-        userDataSet.setId(addedId);
-        final UserDataSet ret = userService.getUserById(addedId);
-        assertEquals(ret.getLogin(), userDataSet.getLogin());
-    }
-
-    @Test
-    public void testGetUserByEmail() throws DatabaseException {
-        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
-        final long addedId = userService.saveUser(userDataSet);
-        assertEquals(userService.getUserByEmail("admin@admin.com").getId().longValue(), addedId);
-    }
-
-    @Test
-    public void testGetUserByLogin() throws DatabaseException {
-        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
-        final long addedId = userService.saveUser(userDataSet);
-        assertEquals(userService.getUserByLogin("admin").getId().longValue(), addedId);
-    }
 
     @Test
     public void testUpdateUserInfo() throws DatabaseException {
-        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
-        final long addedId = userService.saveUser(userDataSet);
-        assertTrue(userService.updateUserInfo(addedId, "admin", "adminNew", "adminNew@admin.com"));
+        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
+        final long addedId = userService.getUserByEmail("admin@admin.com").getId();
+        assertTrue(userService.updateUserInfo(addedId, "adminNew", "adminNew@admin.com"));
         assertEquals("adminNew",userService.getUserById(addedId).getLogin());
     }
 
     @Test
     public void testDeleteUserById() throws DatabaseException {
-        final long newId = userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
-        assertTrue(userService.deleteUserById(newId));
-        assertTrue(userService.getUserById(newId) == null);
+        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
+        final long addedId = userService.getUserByEmail("admin@admin.com").getId();
+        assertTrue(userService.deleteUserById(addedId));
+        assertTrue(userService.getUserById(addedId) == null);
     }
 
     @Test

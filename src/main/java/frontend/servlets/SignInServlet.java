@@ -43,9 +43,7 @@ public class SignInServlet extends HttpServlet {
             responseBody.add("id", new JsonPrimitive(userId));
             LOGGER.info("Get info about user with id: {}", userId);
         } else {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            responseBody.add("error", new JsonPrimitive("User not authorized"));
-            LOGGER.error("Get info of unauth user");
+            goOut(response, responseBody, HttpServletResponse.SC_UNAUTHORIZED, "User not authorized");
         }
         response.getWriter().println(responseBody);
     }
@@ -67,15 +65,16 @@ public class SignInServlet extends HttpServlet {
 
             if (message.getAsJsonObject().get("login") == null
                     || message.getAsJsonObject().get("password") == null) {
-                throw new Exception("Not all params send");
+                goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");
+                return;
             }
 
             final String login = message.getAsJsonObject().get("login").getAsString();
-            final String password = message.getAsJsonObject().get("password").getAsString();
 
             final UserDataSet user = userService.getUserByLogin(login);
-            if (user == null || !password.equals(user.getPassword())) {
-                throw new Exception("Wrong email or password");
+            if ( user == null ) {
+                goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "User doesn\'t exist");
+                return;
             }
 
             final String sessionId = request.getSession().getId();
@@ -86,17 +85,9 @@ public class SignInServlet extends HttpServlet {
             LOGGER.info("Logged in user with id : {}", user.getId());
 
         } catch (JsonParseException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("Wrong json"));
-            LOGGER.error("Wrong json");
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Wrong json");
         } catch (DatabaseException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-            LOGGER.error(e.getMessage());
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-            LOGGER.error(e.getMessage());
+            goOut(response, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Wrong request");
         }
 
         response.getWriter().println(responseBody);
@@ -109,10 +100,7 @@ public class SignInServlet extends HttpServlet {
         final String sessionId = request.getSession().getId();
 
         if (!accountService.logout(sessionId)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("This session is not registered"));
-            LOGGER.error("Fail to delete user session");
-
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Fail to delete user session");
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
             LOGGER.info("Deleted user session with sessionid {}", sessionId);
@@ -120,4 +108,12 @@ public class SignInServlet extends HttpServlet {
 
         response.getWriter().println(responseBody);
     }
+
+    private void  goOut (HttpServletResponse response, JsonObject responseBody,
+                         int status, String error) {
+        response.setStatus(status);
+        responseBody.add("error", new JsonPrimitive(error));
+        LOGGER.error(error);
+    }
 }
+

@@ -20,15 +20,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public long saveUser(UserDataSet dataSet) throws DatabaseException {
+    public boolean saveUser(UserDataSet dataSet) throws DatabaseException {
         return dbService.doReturningWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            final Long returnedId = dao.save(dataSet);
-            if (returnedId == -1L) {
+            if ( !dao.checkUniqueEmail(dataSet.getEmail()) || !dao.checkUniqueLogin(dataSet.getLogin()) ) {
                 LOGGER.error("Fail to add new user");
-                return -1L;
+                return false;
             }
-            return returnedId;
+            dao.save(dataSet);
+            return true;
         });
     }
 
@@ -62,15 +62,15 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean updateUserInfo(Long id, String email, String login, String pass) throws DatabaseException {
+    public boolean updateUserInfo(Long id, String login, String pass) throws DatabaseException {
         return dbService.doReturningWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            final boolean succeed = dao.updateUserInfo(id, email, login, pass);
+            final boolean succeed = dao.updateUserInfo(id, login, pass);
             if (!succeed) {
                 LOGGER.error("Fail to update user #{}", id);
                 return false;
             }
-            LOGGER.info( "Updated user #{}  with info: {}, {}", id, email, login);
+            LOGGER.info( "Updated user #{}  with info: {}, {}", id, login);
             return true;
         });
     }
