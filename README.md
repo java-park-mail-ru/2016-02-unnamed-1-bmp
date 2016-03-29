@@ -1,7 +1,7 @@
 # 2016-02-unnamed-1-bmp Sea Battle
 
 ## Usage
-Step 1. Install: Intelij Idea 15, JDK 8, maven
+Step 1. Install: Intelij Idea 15, JDK 8, maven, mysql >= 5.1, h2(for tests)
 
 Step 2. Clone the repo:
 ```
@@ -13,7 +13,7 @@ Step 4. Build project from root directory
 ```
 mvn compile assembly:single
 ```
-Step 5. Run project
+Step 5. Start mysql server and run project:
 ```
 java -jar target/seaFight-1.0-jar-with-dependencies.jar
 ```

@@ -58,6 +58,6 @@ public class DBServiceImpl implements DBService {
     @Override
     public void shutdown() {
         sessionFactory.close();
-        LOGGER.info("Stutdown database connection");
+        LOGGER.info("Shutdown database connection");
     }
 }

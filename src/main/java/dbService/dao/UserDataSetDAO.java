@@ -4,7 +4,6 @@ import base.datasets.UserDataSet;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.LockMode;
 
 import java.util.List;
@@ -16,11 +15,8 @@ public class UserDataSetDAO {
         this.session = session;
     }
 
-    public long save(UserDataSet dataSet) throws ConstraintViolationException  {
-        final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet ifExists =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
-                .add(Restrictions.eq("login", dataSet.getLogin())).uniqueResult();
-        if (ifExists != null){
+    public long save(UserDataSet dataSet) {
+        if ( !checkUniqueLogin(dataSet.getLogin()) || !checkUniqueEmail(dataSet.getEmail()) ){
             return -1;
         }
         session.save(dataSet);
@@ -30,13 +26,17 @@ public class UserDataSetDAO {
     public UserDataSet readById (long id) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         return (UserDataSet) criteria
+                .add(Restrictions.eq("id", id))
                 .add(Restrictions.eq("isDeleted", false))
-                .add(Restrictions.eq("id", id)).uniqueResult();
+                .uniqueResult();
     }
 
     public UserDataSet readByEmail(String email) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        return (UserDataSet) criteria.add(Restrictions.eq("email", email)).uniqueResult();
+        return (UserDataSet) criteria
+                .add(Restrictions.eq("email", email))
+                .add(Restrictions.eq("isDeleted", false))
+                .uniqueResult();
     }
 
     @SuppressWarnings("JpaQlInspection")
@@ -50,18 +50,26 @@ public class UserDataSetDAO {
 
     @SuppressWarnings("JpaQlInspection")
     public boolean updateUserInfo(Long id, String email, String login, String passw) {
-        final int affected =session.createQuery("UPDATE UserDataSet a SET a.email= :emailNew," +
-                " a.login = :log, a.password = :pass")
+        if ( !checkUniqueLogin(login) || !checkUniqueEmail(email) ){
+            return false;
+        }
+        final int affected = session.createQuery("UPDATE UserDataSet a SET a.email= :emailNew," +
+                " a.login = :log, a.password = :pass WHERE a.id = :id AND a.isDeleted = :isDel")
                 .setParameter("emailNew",email)
                 .setParameter("log", login)
                 .setParameter("pass", passw)
+                .setParameter("id", id)
+                .setParameter("isDel", false)
                 .executeUpdate();
         return affected == 1;
     }
 
     public UserDataSet readByLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        return (UserDataSet) criteria.add(Restrictions.eq("login", login)).uniqueResult();
+        return (UserDataSet) criteria
+                .add(Restrictions.eq("login", login))
+                .add(Restrictions.eq("isDeleted", false))
+                .uniqueResult();
     }
 
     @SuppressWarnings("unchecked")
@@ -73,4 +81,21 @@ public class UserDataSetDAO {
         return (List<UserDataSet>) criteria.list();
     }
 
+    private boolean checkUniqueLogin(String login) {
+        final Criteria criteria = session.createCriteria(UserDataSet.class);
+        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+                .add(Restrictions.eq("login", login))
+                .add(Restrictions.eq("isDeleted", false))
+                .uniqueResult();
+        return userExist == null;
+    }
+
+    private boolean checkUniqueEmail(String email) {
+        final Criteria criteria = session.createCriteria(UserDataSet.class);
+        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+                .add(Restrictions.eq("email", email))
+                .add(Restrictions.eq("isDeleted", false))
+                .uniqueResult();
+        return userExist == null;
+    }
 }

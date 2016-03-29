@@ -24,7 +24,7 @@ public class UserDataSet implements Serializable {
     @Column(name = "user_pass")
     private String password;
 
-    @Column(name = "user_email")
+    @Column(name = "user_email", unique = true)
     private String email;
 
     @Column(name = "user_is_del")

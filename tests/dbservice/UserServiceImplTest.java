@@ -55,8 +55,10 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testGetUserByEmail() throws Exception {
-
+    public void testGetUserByEmail() throws DatabaseException {
+        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
+        final long addedId = userService.saveUser(userDataSet);
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId().longValue(), addedId);
     }
 
     @Test
@@ -70,7 +72,8 @@ public class UserServiceImplTest {
     public void testUpdateUserInfo() throws DatabaseException {
         final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
         final long addedId = userService.saveUser(userDataSet);
-        assertEquals(userService.getUserByLogin("admin").getId().longValue(), addedId);
+        assertTrue(userService.updateUserInfo(addedId, "admin", "adminNew", "adminNew@admin.com"));
+        assertEquals("adminNew",userService.getUserById(addedId).getLogin());
     }
 
     @Test
