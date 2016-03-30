@@ -49,15 +49,6 @@ public class UserServiceImpl implements UserService {
         });
     }
 
-
-    @Override
-    public boolean updateUserInfo(Long id, String login, String pass) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
-            final UserDataSetDAO dao = new UserDataSetDAO(session);
-            return dao.updateUserInfo(id, login, pass);
-        });
-    }
-
     @Override
     public boolean deleteUserById(Long id) throws DatabaseException {
         return dbService.doReturningWork((session)-> {

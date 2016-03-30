@@ -18,8 +18,6 @@ public interface UserService {
 
     UserDataSet getUserByLogin(String login) throws DatabaseException;
 
-    boolean updateUserInfo(Long id, String login, String pass) throws DatabaseException;
-
     boolean deleteUserById(Long id) throws DatabaseException;
 
     List<UserDataSet> getUsers(boolean allUsers) throws DatabaseException;
