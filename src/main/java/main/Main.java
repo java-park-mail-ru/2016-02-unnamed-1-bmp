@@ -12,6 +12,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import javax.servlet.Servlet;
 
 import org.hibernate.HibernateException;
@@ -41,34 +42,34 @@ public class Main {
         LOGGER.info("Starting server at port {}", String.valueOf(port));
         final Context classContext = new Context();
         final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
+        DBService dbService = null;
         try {
-            final DBService dbService = new DBServiceImpl(cfgDb);
-            final UserService userService = new UserServiceImpl(dbService);
-            final AccountService accountService = new AccountServiceImpl();
-
-            classContext.add(UserService.class, userService);
-            classContext.add(AccountService.class, accountService);
-
-            final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-            context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
-            context.addServlet(new ServletHolder(new SignUpServlet(classContext)), "/api/user/*");
-            LOGGER.info("Created servlets");
-
-            final ResourceHandler resourceHandler = new ResourceHandler();
-            resourceHandler.setDirectoriesListed(true);
-            resourceHandler.setResourceBase("dist");
-
-            final HandlerList handlers = new HandlerList();
-            handlers.setHandlers(new Handler[]{resourceHandler, context});
-
-            final Server server = new Server(port);
-            server.setHandler(handlers);
-            server.start();
-            server.join();
-
+            dbService = new DBServiceImpl(cfgDb);
         } catch (LaunchException e) {
-            LOGGER.error(e.getError());
-            LOGGER.error(e.getHibernateException().getMessage());
+            LOGGER.fatal("failed launching server", e);
         }
+        final UserService userService = new UserServiceImpl(dbService);
+        final AccountService accountService = new AccountServiceImpl();
+
+        classContext.add(UserService.class, userService);
+        classContext.add(AccountService.class, accountService);
+
+        final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
+        context.addServlet(new ServletHolder(new SignUpServlet(classContext)), "/api/user/*");
+        LOGGER.info("Created servlets");
+
+        final ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(true);
+        resourceHandler.setResourceBase("dist");
+
+        final HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[]{resourceHandler, context});
+
+        final Server server = new Server(port);
+        server.setHandler(handlers);
+        server.start();
+        server.join();
+
     }
 }

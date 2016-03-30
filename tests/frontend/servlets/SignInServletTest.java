@@ -1,22 +1,15 @@
 package frontend.servlets;
 
-import base.UserService;
 import base.datasets.UserDataSet;
 import dbservice.DatabaseException;
-import dbservice.UserServiceImpl;
-import main.LaunchException;
+import frontend.FrontendTest;
 import org.hamcrest.core.StringContains;
-import base.AccountService;
-import main.AccountServiceImpl;
-import main.Context;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.InputStreamReader;
 import org.apache.commons.io.IOUtils;
@@ -24,42 +17,10 @@ import org.apache.commons.io.IOUtils;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-import org.hibernate.cfg.Configuration;
 import org.junit.Test;
 import org.junit.Before;
 
-public class SignInServletTest {
-    private UserService userService;
-    private AccountService accountService;
-    private Context context;
-
-    private HttpServletResponse getMockedResponse(StringWriter stringWriter) throws IOException {
-        final HttpServletResponse response = mock(HttpServletResponse.class);
-        final PrintWriter writer = new PrintWriter(stringWriter);
-
-        when(response.getWriter()).thenReturn(writer);
-
-        return response;
-    }
-
-    private HttpServletRequest getMockedRequest() {
-        final HttpSession httpSession = mock(HttpSession.class);
-        final HttpServletRequest request = mock(HttpServletRequest.class);
-
-        when(request.getSession()).thenReturn(httpSession);
-
-        return request;
-    }
-
-    @Before
-    public void setUp() throws LaunchException {
-        accountService = mock(AccountServiceImpl.class);
-        userService = mock(UserServiceImpl.class);
-
-        context  = new Context();
-        context.add(AccountService.class, accountService);
-        context.add(UserService.class, userService);
-    }
+public class SignInServletTest extends FrontendTest {
 
     @Test
     public void testDoGetOk() throws IOException, ServletException {
@@ -169,7 +130,7 @@ public class SignInServletTest {
         signInServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Wrong json\"}"));
+        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Can't parse JSON\"}"));
     }
 
     @Test

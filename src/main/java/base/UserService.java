@@ -2,12 +2,15 @@ package base;
 
 
 import base.datasets.UserDataSet;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
+import org.hibernate.Session;
 
 import java.util.List;
 
 public interface UserService {
-    boolean saveUser (UserDataSet dataSet) throws DatabaseException;
+    void saveUser (UserDataSet dataSet) throws DatabaseException;
 
     UserDataSet getUserById (long id) throws DatabaseException;
 
@@ -20,4 +23,9 @@ public interface UserService {
     boolean deleteUserById(Long id) throws DatabaseException;
 
     List<UserDataSet> getUsers(boolean allUsers) throws DatabaseException;
+
+    boolean isEmailUnique(String email) throws DatabaseException;
+
+    boolean isLoginUnique(String login) throws DatabaseException;
+
 }
