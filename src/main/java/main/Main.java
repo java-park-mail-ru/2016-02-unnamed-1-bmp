@@ -44,6 +44,7 @@ public class Main {
             dbService = new DBServiceImpl(cfgDb);
         } catch (LaunchException e) {
             LOGGER.fatal("failed launching server", e);
+//            return;
         }
         final UserService userService = new UserServiceImpl(dbService);
         final AccountService accountService = new AccountServiceImpl();
