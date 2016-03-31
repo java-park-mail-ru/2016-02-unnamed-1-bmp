@@ -13,9 +13,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.servlet.Servlet;
-
-import org.hibernate.HibernateException;
 import org.hibernate.cfg.Configuration;
 
 

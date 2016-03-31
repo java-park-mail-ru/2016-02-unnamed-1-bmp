@@ -18,7 +18,6 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.junit.Before;
 
 
 public class SignUpServletTest extends FrontendTest{

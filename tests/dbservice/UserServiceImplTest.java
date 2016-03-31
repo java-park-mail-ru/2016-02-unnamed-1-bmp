@@ -1,54 +1,41 @@
 package dbservice;
 
-import base.DBService;
-import base.UserService;
 import base.datasets.UserDataSet;
-import dbservice.dao.UserDataSetDAO;
-import main.LaunchException;
-import org.hibernate.cfg.Configuration;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.mockito.BDDMockito;
 
 
 public class UserServiceImplTest extends TestsWithDb {
     @Test
     public void testSave() throws DatabaseException {
-        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
-        assertEquals(userService.getUserByEmail("admin@admin.com").getLogin(), "admin");
-        assertEquals(userService.getUserByLogin("admin").getEmail(), "admin@admin.com");
+        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
+        userService.saveUser(userDataSet);
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId(), userDataSet.getId());
     }
 
     @Test
     public void testSaveUserDoubleLogin() throws DatabaseException {
-        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
+        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
+        userService.saveUser(userDataSet);
         try {
             userService.saveUser(new UserDataSet("admin", "admin", "adminNew@admin.com"));
         } catch (DatabaseException e) {
             assertNotNull(e);
         }
-        assertEquals(userService.getUserByEmail("admin@admin.com").getLogin(),"admin");
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId(),userDataSet.getId());
     }
 
     @Test
     public void testSaveUserDoubleEmail() throws DatabaseException {
-        userService.saveUser(new UserDataSet("admin", "admin", "admin@admin.com"));
+        final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
+        userService.saveUser(userDataSet);
         try {
             userService.saveUser(new UserDataSet("adminNew", "admin", "admin@admin.com"));
         } catch (DatabaseException e) {
             assertNotNull(e);
         }
-        assertEquals(userService.getUserByEmail("admin@admin.com").getLogin(),"admin");
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId(),userDataSet.getId());
     }
 
 
