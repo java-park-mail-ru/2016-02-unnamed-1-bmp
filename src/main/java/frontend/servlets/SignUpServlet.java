@@ -1,8 +1,8 @@
 package frontend.servlets;
 
+import base.AccountService;
+import base.UserService;
 import com.google.gson.*;
-import main.AccountService;
-import main.UserProfile;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,14 +11,23 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import dbservice.DatabaseException;
+import main.Context;
+import base.datasets.UserDataSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-@SuppressWarnings("SameParameterValue")
 public class SignUpServlet extends HttpServlet {
+    public static final String PATH = "/api/user/*";
+    private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
     private AccountService accountService;
+    private UserService userService;
 
-    public SignUpServlet() {
-        this.accountService = AccountService.getInstance();
+    public SignUpServlet(Context context) {
+        this.userService = (UserService) context.get(UserService.class);
+        this.accountService = (AccountService) context.get(AccountService.class);
     }
+
 
     @Override
     public void doPost(HttpServletRequest request,
@@ -26,106 +35,93 @@ public class SignUpServlet extends HttpServlet {
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
-
-        try {
-            JsonElement message = new JsonObject();
-            if (jsonParser.hasNext()) {
-                message = jsonParser.next();
-            }
-
-            if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
-                    || message.getAsJsonObject().get("password") == null) {
-                throw new Exception("Not all params send");
-            }
-
-            final String login = message.getAsJsonObject().get("login").getAsString();
-            final String email = message.getAsJsonObject().get("email").getAsString();
-            final String password = message.getAsJsonObject().get("password").getAsString();
-
-            final UserProfile newUser = accountService.createUser(login, password, email);
-
-            if (newUser == null) {
-                throw new Exception("Login already exist");
-            }
-            final String sessionId = request.getSession().getId();
-            accountService.addSessions(sessionId, newUser);
-
-            responseBody.add("id", new JsonPrimitive(newUser.getId()));
-            response.setStatus(HttpServletResponse.SC_OK);
-
-        } catch (JsonParseException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+        JsonElement message = new JsonObject();
+        if (!message.isJsonObject()) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not a JSON");
+            response.getWriter().println(responseBody);
+            return;
         }
 
+        try {
+            if (jsonParser.hasNext()) message = jsonParser.next();
+        } catch (JsonParseException e) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        LOGGER.info("Incoming message: {}", message.toString());
+        if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
+                || message.getAsJsonObject().get("password") == null) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        final String login = message.getAsJsonObject().get("login").getAsString();
+        final String email = message.getAsJsonObject().get("email").getAsString();
+        final String password = message.getAsJsonObject().get("password").getAsString();
+        long newUserId = 0;
+        try {
+            if (!userService.isEmailUnique(email)) {
+                goOutFieldError(response, responseBody, HttpServletResponse.SC_FORBIDDEN,
+                        "Email already exist", "email");
+                response.getWriter().println(responseBody);
+                return;
+            }
+            if (!userService.isLoginUnique(login)) {
+                goOutFieldError(response, responseBody, HttpServletResponse.SC_BAD_REQUEST,
+                        "Login already exist", "login");
+                response.getWriter().println(responseBody);
+                return;
+            }
+            userService.saveUser(new UserDataSet(login, password, email));
+            final String sessionId = request.getSession().getId();
+            newUserId = userService.getUserByLogin(login).getId();
+            accountService.addSessions(sessionId, newUserId);
+        } catch (DatabaseException e) {
+            goOutDatabseException(response, responseBody,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            response.getWriter().println(responseBody);
+            return;
+        }
+        responseBody.add("id", new JsonPrimitive(newUserId));
+        response.setStatus(HttpServletResponse.SC_OK);
+        LOGGER.info("Rigister user {}", login);
         response.getWriter().println(responseBody);
     }
+
 
     @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
+        UserDataSet currUser = null;
         try {
-            final UserProfile currentUser = checkRequest(request);
-            if(currentUser == null) {
-                throw new Exception("Unknown user");
-            }
-            response.setStatus(HttpServletResponse.SC_OK);
-            responseBody.add("id", new JsonPrimitive(currentUser.getId()));
-            responseBody.add("login", new JsonPrimitive(currentUser.getLogin()));
-            responseBody.add("email", new JsonPrimitive(currentUser.getEmail()));
-
+            currUser = checkRequest(request);
         } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-        } catch (Exception e) {
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-        }
-        response.getWriter().println(responseBody);
-    }
-
-
-    @Override
-    public void doPut(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException {
-        final JsonObject responseBody = new JsonObject();
-        final BufferedReader bufferedReader = request.getReader();
-
-        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
-        try {
-            final UserProfile currUser = checkRequest(request);
-
-            JsonElement message = new JsonObject();
-            if (jsonParser.hasNext()) {
-                message = jsonParser.next();
-            }
-
-            if (message.getAsJsonObject().get("login") == null
-                    || message.getAsJsonObject().get("email") == null
-                    || message.getAsJsonObject().get("password") == null) {
-                throw new Exception("Pls enter all params");
-            }
-
-            final String login = message.getAsJsonObject().get("login").getAsString();
-            final String email = message.getAsJsonObject().get("email").getAsString();
-            final String password = message.getAsJsonObject().get("password").getAsString();
-
-            if (currUser == null || !accountService.updateUser(currUser.getId(), login, password, email)) {
-                throw new Exception("User doesn't exist");
-            }
-            responseBody.add("id", new JsonPrimitive(currUser.getId()));
-            response.setStatus(HttpServletResponse.SC_OK);
-        } catch (NumberFormatException | JsonParseException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            response.getWriter().println(responseBody);
+            return;
+        } catch (DatabaseException e) {
+            goOutDatabseException(response, responseBody,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            response.getWriter().println(responseBody);
+            return;
         }
 
+        if (currUser == null) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "User doesn\'t exist");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        final Long currUserId = currUser.getId();
+        response.setStatus(HttpServletResponse.SC_OK);
+        responseBody.add("id", new JsonPrimitive(currUserId));
+        responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
+        responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
+        LOGGER.info("Get info about user {}", currUser.getLogin());
         response.getWriter().println(responseBody);
     }
 
@@ -134,49 +130,62 @@ public class SignUpServlet extends HttpServlet {
     public void doDelete(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-        try {
-            final UserProfile userProfile = checkRequest(request);
-            if (userProfile == null || !accountService.deleteUser(userProfile.getId())) {
-                throw new Exception("user doesnt exist");
-            }
-            response.setStatus(HttpServletResponse.SC_OK);
 
+        try {
+            final UserDataSet currUser = checkRequest(request);
+            if (currUser == null || !userService.deleteUserById(currUser.getId()) ) {
+                goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "User doesn\'t exist");
+                response.getWriter().println(responseBody);
+                return;
+            } else {
+                accountService.logoutFull(currUser.getId());
+                response.setStatus(HttpServletResponse.SC_OK);
+                LOGGER.info("Deleted user with id {}", currUser.getId());
+            }
         } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            responseBody.add("error", new JsonPrimitive(e.getMessage()));
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Wrong request");
+        } catch (DatabaseException e) {
+            goOutDatabseException(response, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "This session is not registered", e);
         }
+
         response.getWriter().println(responseBody);
     }
 
-
-    public static boolean isInteger(String s, int radix) {
-        if (s.isEmpty()) return false;
-        for (int i = 0; i < s.length(); i++) {
-            if (i == 0 && s.charAt(i) == '-') {
-                if (s.length() == 1) return false;
-                else continue;
-            }
-            if (Character.digit(s.charAt(i), radix) < 0) return false;
+    public UserDataSet checkRequest(HttpServletRequest request) throws DatabaseException {
+        if (request.getPathInfo() == null)
+            return null;
+        final String requestUserId = request.getPathInfo().replace("/", "");
+        if (requestUserId == null || !requestUserId.matches("^\\d+$"))
+            return null;
+        long userDbId = 0;
+        try {
+            userDbId = Integer.parseInt(requestUserId);
+        } catch (NumberFormatException ignore) {
+            return null;
         }
-        return true;
+        return userService.getUserById(userDbId);
     }
 
-    public UserProfile checkRequest(HttpServletRequest request) throws Exception, NumberFormatException {
+    private void goOut(HttpServletResponse response, JsonObject responseBody,
+                       int status, String error) {
+        response.setStatus(status);
+        responseBody.add("error", new JsonPrimitive(error));
+        LOGGER.debug(error);
+    }
 
-        if (request.getPathInfo() == null) throw new Exception("Wrong request");
+    private void goOutFieldError(HttpServletResponse response, JsonObject responseBody,
+                                 int status, String error, String field) {
+        response.setStatus(status);
+        responseBody.add("error", new JsonPrimitive(error));
+        responseBody.add("field", new JsonPrimitive(field));
+        LOGGER.debug(error);
+    }
 
-        final String requestUserId = request.getPathInfo().replace("/", "");
-
-        if (requestUserId == null || !isInteger(requestUserId, 10)) throw new Exception("Wrong request");
-
-        final long userId = Integer.parseInt(requestUserId);
-        final String currentUserSession = request.getSession().getId();
-
-        if (accountService.getUserBySession(userId, currentUserSession)) throw new Exception("Request from other user");
-
-        return accountService.getUserById(userId);
+    private void goOutDatabseException(HttpServletResponse response, JsonObject responseBody,
+                                       int status, String error, DatabaseException exc) {
+        response.setStatus(status);
+        responseBody.add("error", new JsonPrimitive(error));
+        LOGGER.debug(error, exc);
     }
 }
