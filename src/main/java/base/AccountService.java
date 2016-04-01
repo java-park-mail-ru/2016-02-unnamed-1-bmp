@@ -7,6 +7,8 @@ public interface AccountService {
 
     boolean logout(String sessionId);
 
+    void logoutFull(long userId);
+
     Long getUserIdBySesssion(String sessionId);
 
     boolean userLoggedIn(String sessionId);

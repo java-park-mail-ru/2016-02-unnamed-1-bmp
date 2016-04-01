@@ -1,5 +1,6 @@
 package main;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -42,4 +43,10 @@ public class AccountServiceImpl implements AccountService {
     public boolean userLoggedIn(String sessionId) {
         return sessions.get(sessionId) != null;
     }
+
+    @Override
+    public void logoutFull(long userId) {
+        sessions.values().removeAll(Collections.singleton(userId));
+    }
+
 }

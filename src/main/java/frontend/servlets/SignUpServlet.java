@@ -130,6 +130,7 @@ public class SignUpServlet extends HttpServlet {
     public void doDelete(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
+
         try {
             final UserDataSet currUser = checkRequest(request);
             if (currUser == null || !userService.deleteUserById(currUser.getId()) ) {
@@ -137,6 +138,7 @@ public class SignUpServlet extends HttpServlet {
                 response.getWriter().println(responseBody);
                 return;
             } else {
+                accountService.logoutFull(currUser.getId());
                 response.setStatus(HttpServletResponse.SC_OK);
                 LOGGER.info("Deleted user with id {}", currUser.getId());
             }
@@ -146,6 +148,7 @@ public class SignUpServlet extends HttpServlet {
             goOutDatabseException(response, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "This session is not registered", e);
         }
+
         response.getWriter().println(responseBody);
     }
 
