@@ -1,0 +1,69 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Game</title>
+    <script type="text/javascript">
+        var ws;
+        var started = false;
+        var finished = false;
+
+        init = function () {
+            ws = new WebSocket("ws://localhost:8080/gameplay");
+
+            ws.onopen = function (event) {
+
+            }
+
+            ws.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                if(data.action == "start"){
+                    document.getElementById("wait").style.display = "none";
+                    document.getElementById("gameplay").style.display = "block";
+                    document.getElementById("enemyName").innerHTML = data.body.enemyName;
+                    document.getElementById("myName").innerHTML = data.body.myName;
+                }
+
+            }
+
+            ws.onclose = function (event) {
+
+            }
+
+        };
+
+        function sendMessage() {
+            var message = "{}";
+            ws.send(message);
+        }
+
+    </script>
+</head>
+<body onload="init();">
+<div id="body">
+    <div id="hello">
+        <p>Game</p>
+    </div>
+
+    <div id="wait">
+        <p>Prepare yourself. Wait for enemy!</p>
+    </div>
+
+    <div id="gameplay" style="display: none">
+        <div id="score">
+            <p> You are: <span id="myName"></span></p>
+
+            <p> Your enemy: <span id="enemyName"></span></p>
+        </div>
+
+        <form name="gamePlay" action="">
+            <input type="button" name="submit" value="Press to win!" onclick="sendMessage();"/>
+        </form>
+    </div>
+
+    <div id="gameOver" style="display: none">
+        <p>Game over! You are <span id="win"></span></p>
+    </div>
+
+</div>
+</body>
+</html>
