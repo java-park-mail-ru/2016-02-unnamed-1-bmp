@@ -9,7 +9,7 @@
             "login":"player555"
         }
     }
- ```
+```
 ## Начало игры
 
 ```
@@ -45,37 +45,22 @@
 
 ```
     {
-        "action":"game_over",
+        "action":"gameOver",
         "body": {
-            "login":"player777"
+            "win":True
         }
     }
 ```
 
 # Отправляемые сообщения
 
-## Тип игры
-
-```
-ws = new WebSocket("ws://localhost:8080/gameplay");
-function sendMessage() {
-    var message = "{
-        "action":"choose_type",
-        "body":{
-            "login":"player777",
-            "type": "single / multi"
-        }
-    }"
-    ws.send(message);
-}
-```
 ## После расстановки корабле отсылается JSON с координатами всех расставленных кораблей
 
 ```
+ws = new WebSocket("ws://localhost:8080/gameplay");
 var message = "{
     "action":"set_ships",
     "body":{
-        "login":"player777",
         "four-decked":[[1,1],[1,2],[1,3],[1,4]],
         "three-decked":[[[1,1],[1,2],[1,3]],[[1,1],[1,2],[1,3]]],
         "two-decked":[[[1,1],[1,2]],[[1,1],[1,2]],[[1,1],[1,2]]],
@@ -89,7 +74,6 @@ var message = "{
  var message = " {
     "action":"shoot",
     "body":{
-        "login":"player777",
         "coordinates":[1,1]
     }
 }"

@@ -14,23 +14,24 @@ public class GameSession {
 
     private Map<String, GameUser> users = new HashMap<>();
 
-    public GameSession(String user1, String user2) {
+    public GameSession(String first, Map<String, String>  firstBoats,
+                       String second, Map<String, String> secondBoats) {
         startTime = new Date().getTime();
-        GameUser gameUser1 = new GameUser(user1);
-        gameUser1.setEnemyName(user2);
+        final GameUser firstGameUser = new GameUser(first, firstBoats);
+        firstGameUser.setEnemyName(second);
 
-        GameUser gameUser2 = new GameUser(user2);
-        gameUser2.setEnemyName(user1);
+        final GameUser secondGameUser = new GameUser(second, secondBoats);
+        secondGameUser.setEnemyName(first);
 
-        users.put(user1, gameUser1);
-        users.put(user2, gameUser2);
+        users.put(first, firstGameUser);
+        users.put(second, secondGameUser);
 
-        this.first = gameUser1;
-        this.second = gameUser2;
+        this.first = firstGameUser;
+        this.second = secondGameUser;
     }
 
     public GameUser getEnemy(String user) {
-        String enemyName = users.get(user).getEnemyName();
+        final String enemyName = users.get(user).getEnemyName();
         return users.get(enemyName);
     }
 

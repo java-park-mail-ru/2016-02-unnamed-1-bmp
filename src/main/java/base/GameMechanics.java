@@ -1,8 +1,12 @@
 package base;
 
 
-public interface GameMechanics {
-    public void addUser(String user);
+import java.util.Map;
 
-    public void run();
+public interface GameMechanics {
+    void addUser(String user, Map<String, String> userBoats);
+
+    void run();
+
+    void shoot(String myName, String coordinates);
 }
