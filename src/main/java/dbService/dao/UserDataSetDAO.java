@@ -3,6 +3,7 @@ package dbservice.dao;
 import base.datasets.UserDataSet;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.LockMode;
 
@@ -66,6 +67,32 @@ public class UserDataSetDAO {
                 .add(Restrictions.eq("isDeleted", false))
                 .uniqueResult();
     }
+
+    @SuppressWarnings("JpaQlInspection")
+    public boolean incrementScore(long id) {
+        final Criteria criteria = session.createCriteria(UserDataSet.class);
+        final UserDataSet user =  (UserDataSet) criteria
+                .add(Restrictions.eq("id", id))
+                .add(Restrictions.eq("isDeleted", false))
+                .uniqueResult();
+
+        final int currScore = user.getScore();
+        final int affected = session.createQuery("UPDATE UserDataSet a SET " +
+                "a.score = :scr WHERE a.id = :id")
+                .setParameter("scr", currScore)
+                .setParameter("id", id)
+                .executeUpdate();
+        return affected == 1;
+    }
+
+    public List<UserDataSet> getTopTen() {
+        final Criteria criteria = session.createCriteria(UserDataSet.class);
+        criteria.add(Restrictions.eq("isDeleted", false))
+                .addOrder(Order.desc("score"))
+                .setMaxResults(10);
+        return (List<UserDataSet>) criteria.list();
+    }
+
 
     @SuppressWarnings("unchecked")
     public List<UserDataSet> readAll(boolean skipDeleted) {

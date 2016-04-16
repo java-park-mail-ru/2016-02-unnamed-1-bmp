@@ -28,7 +28,7 @@
                     document.getElementById("shooted").innerHTML += " " + data.body.coordinates + " <br> ";
                 }
                 if (data.action == "gameOver") {
-                    document.getElementById("win").innerHTML += data.body;
+                    document.getElementById("win").innerHTML += data.body.win;
                     ws.close(1000, "GAME OVER");
                 }
 
@@ -103,6 +103,7 @@
         </span>
 
         <span id="win">
+            Have you won?:
         </span>
     </div>
 

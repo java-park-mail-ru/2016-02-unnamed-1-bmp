@@ -3,6 +3,7 @@ package main;
 import base.*;
 import dbservice.UserServiceImpl;
 import frontend.WebSocketServiceImpl;
+import frontend.servlets.ScoreboardServlet;
 import frontend.servlets.SignInServlet;
 import frontend.servlets.SignUpServlet;
 import frontend.servlets.WebSocketGameServlet;
@@ -36,9 +37,9 @@ public class Main {
         int port = DEFAULT_PORT;
         String host = DEFAULT_HOST;
 
-        try (final FileInputStream fis = new FileInputStream("setups/server.properties")) {
+        try (final FileInputStream serverProps = new FileInputStream("setups/server.properties")) {
             final Properties properties = new Properties();
-            properties.load(fis);
+            properties.load(serverProps);
             port = Integer.valueOf(properties.getProperty("port"));
             host = properties.getProperty("host");
         } catch (FileNotFoundException e) {
@@ -70,6 +71,7 @@ public class Main {
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
         context.addServlet(new ServletHolder(new SignUpServlet(classContext)), "/api/user/*");
+        context.addServlet(new ServletHolder(new ScoreboardServlet(classContext)), "/api/scoreboard");
         context.addServlet(new ServletHolder(new WebSocketGameServlet(classContext)), "/gameplay");
         LOGGER.info("Created servlets");
 

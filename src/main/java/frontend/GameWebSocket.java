@@ -1,11 +1,9 @@
 package frontend;
 
 
-import base.AccountService;
-import base.GameMechanics;
-import base.GameUser;
-import base.WebSocketService;
+import base.*;
 import com.google.gson.*;
+import dbservice.DatabaseException;
 import main.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +27,8 @@ public class GameWebSocket {
     private Session session;
     private WebSocketService webSocketService;
     private GameMechanics gameMechanics;
-//    private
+    private UserService userService;
+
     private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
 
 
@@ -39,6 +38,7 @@ public class GameWebSocket {
 
         this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
         this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+        this.userService = (UserService) context.get(UserService.class);
     }
 
     public String getMyName() {
@@ -62,13 +62,16 @@ public class GameWebSocket {
 
     public void finishGame(boolean win) {
         try {
+            if(win && currentUserId != -1){
+                userService.incrementUserScore(currentUserId);
+            }
             final JsonObject jsonStart = new JsonObject();
             jsonStart.add("action", new JsonPrimitive("gameOver"));
             final JsonObject body = new JsonObject();
             body.add("win", new JsonPrimitive(win));
             jsonStart.add("body", body);
             session.getRemote().sendString(jsonStart.toString());
-        } catch (IOException e) {
+        } catch (IOException | DatabaseException e) {
             LOGGER.error(e.getMessage());
         }
     }

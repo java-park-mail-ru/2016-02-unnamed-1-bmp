@@ -31,6 +31,9 @@ public class UserDataSet implements Serializable {
     @Type(type="yes_no")
     private Boolean isDeleted;
 
+    @Column(name = "user_score")
+    private Integer score;
+
     public UserDataSet() {
 
     }
@@ -41,6 +44,7 @@ public class UserDataSet implements Serializable {
         this.password = password;
         this.email = email;
         this.isDeleted = false;
+        this.score = 0;
     }
 
     public void updateUser(String log, String pass, String mail){
@@ -83,5 +87,13 @@ public class UserDataSet implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getScore() {
+        return this.score;
+    }
+
+    public void setScore(Integer scr) {
+        this.score = scr;
     }
 }

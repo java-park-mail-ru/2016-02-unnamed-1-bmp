@@ -25,6 +25,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public boolean incrementUserScore(long id) throws DatabaseException {
+        return dbService.doReturningWork((session)-> {
+            final UserDataSetDAO dao = new UserDataSetDAO(session);
+            return dao.incrementScore(id);
+        });
+    }
+
+    @Override
     public UserDataSet getUserById(long id) throws DatabaseException {
         return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
@@ -64,6 +72,15 @@ public class UserServiceImpl implements UserService {
             return dao.readAll(getAll);
         });
     }
+
+    @Override
+    public List<UserDataSet> getTop() throws DatabaseException {
+        return dbService.doReturningWork((session)-> {
+            final UserDataSetDAO dao = new UserDataSetDAO(session);
+            return dao.getTopTen();
+        });
+    }
+
 
     @Override
     public boolean isEmailUnique(String email) throws DatabaseException {
