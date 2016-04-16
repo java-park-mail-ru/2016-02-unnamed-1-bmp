@@ -4,6 +4,7 @@ import base.GameMechanics;
 import base.GameUser;
 import base.WebSocketService;
 import com.google.gson.JsonObject;
+import com.sun.istack.internal.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.TimeHelper;
@@ -39,6 +40,19 @@ public class GameMechanicsImpl implements GameMechanics{
         } else {
             waiter = user;
             waiterBoats = new HashMap<>(userBoats);
+        }
+    }
+
+    @Override
+    public void removeUser(@NotNull String user) {
+        if(waiter != null && waiter.equals(user)){
+            waiter = null;
+            waiterBoats = null;
+        }
+        final GameSession myGameSession = nameToGame.get(user);
+        if(myGameSession != null) {
+            final GameUser enemyUser = myGameSession.getEnemy(user);
+            webSocketService.notifyEnemyLeft(enemyUser);
         }
     }
 
@@ -81,8 +95,10 @@ public class GameMechanicsImpl implements GameMechanics{
     }
 
     private void startGame(String first, Map<String, String> firstBoats) {
+
         final String second = waiter;
         final Map<String, String> secondBoats = new HashMap<>(waiterBoats);
+
 
         final GameSession gameSession = new GameSession(first, firstBoats, second, secondBoats);
 

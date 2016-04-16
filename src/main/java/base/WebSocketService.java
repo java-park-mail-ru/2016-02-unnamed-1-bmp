@@ -7,6 +7,8 @@ public interface WebSocketService {
 
     void addUser(GameWebSocket user);
 
+    void removeUser(GameWebSocket user);
+
     void notifyStartGame(GameUser user);
 
     void notifyAct(GameUser user, JsonObject shoot);
@@ -14,5 +16,7 @@ public interface WebSocketService {
     void notifyWait(GameUser user, JsonObject shoot);
 
     void notifyGameOver(GameUser user, boolean win);
+
+    void notifyEnemyLeft(GameUser user);
 }
 

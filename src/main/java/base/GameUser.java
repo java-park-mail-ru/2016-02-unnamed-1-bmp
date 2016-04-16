@@ -54,6 +54,7 @@ public class GameUser {
             if (Objects.equals(boatName, "one-decked")) {
                 responseBody.add("status", new JsonPrimitive("killed"));
                 responseBody.add("coordinates", new JsonPrimitive(coordiantes));
+                aliveBoats.remove(coordiantes);
                 return responseBody;
             }
 

@@ -76,6 +76,15 @@ public class GameWebSocket {
         }
     }
 
+    public void finishGameEnemyleft() {
+        try {
+            final JsonObject jsonStart = new JsonObject();
+            jsonStart.add("action", new JsonPrimitive("enemyLeft"));
+            session.getRemote().sendString(jsonStart.toString());
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+        }
+    }
 
     public void shootAction(JsonObject shootResponce) {
         try {
@@ -146,6 +155,8 @@ public class GameWebSocket {
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
+        webSocketService.removeUser(this);
+        gameMechanics.removeUser(myName);
         LOGGER.info("Closing socket status: {} reason: {}", statusCode, reason);
     }
 
