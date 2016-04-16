@@ -17,11 +17,6 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     @Override
-    public void removeUser(GameUser user) {
-        userSockets.remove(user.getMyName());
-    }
-
-    @Override
     public void notifyStartGame(GameUser user) {
         final GameWebSocket gameWebSocket = userSockets.get(user.getMyName());
         gameWebSocket.startGame(user);
@@ -42,7 +37,8 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void notifyGameOver(GameUser user, boolean win) {
-        userSockets.get(user.getMyName()).finishGame(user, win);
+        userSockets.get(user.getMyName()).finishGame(win);
+        userSockets.remove(user.getMyName());
     }
 
 }

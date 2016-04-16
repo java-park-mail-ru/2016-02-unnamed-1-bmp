@@ -35,6 +35,18 @@ public class GameSession {
         return users.get(enemyName);
     }
 
+    public long getSessionTime(){
+        return new Date().getTime() - startTime;
+    }
+
+    public GameUser getFirst() {
+        return first;
+    }
+
+    public GameUser getSecond() {
+        return second;
+    }
+
     public GameUser getSelf(String user) {
         return users.get(user);
     }

@@ -7,6 +7,8 @@ import base.GameUser;
 import base.WebSocketService;
 import com.google.gson.*;
 import main.Context;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -20,18 +22,21 @@ import java.util.Map;
 
 @WebSocket
 public class GameWebSocket {
+    private static final int INDLE_SHIPS_NUM = 20;
     private String myName;
     private Long currentUserId;
+
     private Session session;
-    private AccountService accountService;
     private WebSocketService webSocketService;
     private GameMechanics gameMechanics;
+//    private
+    private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
 
 
-    GameWebSocket(String name, Context context, String userSessionId) {
+    GameWebSocket(String name, Context context, Long userId) {
         this.myName = name;
-        this.accountService = (AccountService) context.get(AccountService.class);
-//        this.currentUserId = accountService.getUserIdBySesssion(userSessionId);
+        this.currentUserId = userId;
+
         this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
         this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
     }
@@ -50,12 +55,12 @@ public class GameWebSocket {
             jsonStart.add("body", body);
             session.getRemote().sendString(jsonStart.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
 
-    public void finishGame(GameUser user, boolean win) {
+    public void finishGame(boolean win) {
         try {
             final JsonObject jsonStart = new JsonObject();
             jsonStart.add("action", new JsonPrimitive("gameOver"));
@@ -64,7 +69,7 @@ public class GameWebSocket {
             jsonStart.add("body", body);
             session.getRemote().sendString(jsonStart.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -76,7 +81,7 @@ public class GameWebSocket {
             jsonShoot.add("body", shootResponce);
             session.getRemote().sendString(jsonShoot.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -87,47 +92,65 @@ public class GameWebSocket {
             jsonShoot.add("body", shootResponce);
             session.getRemote().sendString(jsonShoot.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
     @OnWebSocketMessage
     public void onMessage(String data) {
-        final JsonElement jsonElement = new JsonParser().parse(data);
-        final JsonPrimitive jsonObject = jsonElement.getAsJsonObject().getAsJsonPrimitive("action");
-        if (jsonObject.equals(new JsonPrimitive("set_ships"))) {
-            final Map<String, String> userBoats = parseIncomingShips(jsonElement);
-            gameMechanics.addUser(myName, userBoats);
-        } else if (jsonObject.equals(new JsonPrimitive("shoot"))){
-            final JsonObject subJson = jsonElement.getAsJsonObject().getAsJsonObject("body");
-            final String coordiantes = subJson.getAsJsonArray("coordinates").toString();
-            gameMechanics.shoot(myName, coordiantes);
+        try {
+            final JsonElement jsonElement = new JsonParser().parse(data);
+            final String action = jsonElement.getAsJsonObject().getAsJsonPrimitive("action").getAsString();
+            if(action == null){
+                throw new JsonSyntaxException("Can't find out action in JSON");
+            }
+            switch (action){
+                case "set_ships":
+                    final Map<String, String> userBoats = parseIncomingShips(jsonElement);
+                    if(userBoats.size() != INDLE_SHIPS_NUM) {
+                        final JsonObject error = new JsonObject();
+                        error.add("error", new JsonPrimitive("Not enough ships"));
+                        return;
+                    }
+                    gameMechanics.addUser(myName, userBoats);
+                    break;
+                case "shoot":
+                    final JsonObject subJson = jsonElement.getAsJsonObject().getAsJsonObject("body");
+                    final String coordiantes = subJson.getAsJsonArray("coordinates").toString();
+                    gameMechanics.shoot(myName, coordiantes);
+                    break;
+                default:
+                    throw new JsonSyntaxException("Unknown action");
+            }
+        } catch (JsonSyntaxException e) {
+            LOGGER.error(e.getMessage());
+            final JsonObject error = new JsonObject();
+            error.add("error", new JsonPrimitive(e.getMessage()));
+        } catch (RuntimeException e) {
+            LOGGER.error(e.getMessage());
+            final JsonObject error = new JsonObject();
+            error.add("error", new JsonPrimitive("Unexpected error"));
         }
-
     }
 
 
     @OnWebSocketConnect
-    public void onOpen(Session session) {
-        this.session = session;
+    public void onOpen(Session ses) {
+        this.session = ses;
         webSocketService.addUser(this);
     }
 
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-
+        LOGGER.info("Closing socket status: {} reason: {}", statusCode, reason);
     }
 
     public Session getSession() {
         return session;
     }
 
-    public void setSession(Session session) {
-        this.session = session;
-    }
-
-    private Map<String, String>  parseIncomingShips(JsonElement ships) {
+    private Map<String, String>  parseIncomingShips(JsonElement ships) throws JsonSyntaxException {
         final Map<String, String> userBoats = new HashMap<>();
         final JsonObject subJson = ships.getAsJsonObject().getAsJsonObject("body");
         for (int i = 0; i < 4; ++i) {

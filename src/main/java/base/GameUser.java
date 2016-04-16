@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GameUser {
-    public static final int ALL_BOATS = 20;
+    public static final int ALL_BOATS_NUM = 20;
     private final String myName;
     private String enemyName;
     private Map<String, String> aliveBoats;
@@ -60,7 +60,7 @@ public class GameUser {
             killedBoats.put(coordiantes, boatName);
             aliveBoats.remove(coordiantes);
 
-            if (killedBoats.size() == ALL_BOATS) {
+            if (killedBoats.size() == ALL_BOATS_NUM) {
                 responseBody.add("status", new JsonPrimitive("lost"));
                 killedBoats.clear();
                 aliveBoats.clear();
@@ -72,19 +72,19 @@ public class GameUser {
             if(alive == 0){
                 responseBody.add("status", new JsonPrimitive("killed"));
                 final JsonArray jsonArray = new JsonArray();
-                for(Map.Entry<String, String> e : killedBoats.entrySet()) {
-                    if(e.getValue().equals(boatName)) {
-                        jsonArray.add(e.getKey());
-                    }
-                }
+                killedBoats.entrySet().stream().filter(e -> e.getValue().equals(boatName)).forEach(e -> {
+                    jsonArray.add(e.getKey());
+                });
                 responseBody.add("coordinates", jsonArray);
                 return responseBody;
             }
             aliveCounters.replace(boatName, alive);
             responseBody.add("status", new JsonPrimitive("picked"));
+            responseBody.add("coordinates", new JsonPrimitive(coordiantes));
             return responseBody;
         }
         responseBody.add("status", new JsonPrimitive("missed"));
+        responseBody.add("coordinates", new JsonPrimitive(coordiantes));
         return responseBody;
 
     }

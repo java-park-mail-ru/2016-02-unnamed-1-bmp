@@ -9,6 +9,7 @@ import frontend.servlets.WebSocketGameServlet;
 import game.GameMechanicsImpl;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -21,22 +22,30 @@ import org.hibernate.cfg.Configuration;
 
 import dbservice.DBServiceImpl;
 
-import java.util.Arrays;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Properties;
 
 public class Main {
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static final int DEFAULT_PORT = 8080;
+    public static final String DEFAULT_HOST = "127.0.0.1";
 
     @SuppressWarnings("OverlyBroadThrowsClause")
     public static void main(String[] args) throws Exception {
-
         int port = DEFAULT_PORT;
-        if (args.length == 1) {
-            final String portString = args[0];
-            port = Integer.valueOf(portString);
-        }
+        String host = DEFAULT_HOST;
 
-        LOGGER.info("Starting server at port {}", String.valueOf(port));
+        try (final FileInputStream fis = new FileInputStream("setups/server.properties")) {
+            final Properties properties = new Properties();
+            properties.load(fis);
+            port = Integer.valueOf(properties.getProperty("port"));
+            host = properties.getProperty("host");
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Can't find server configuration file - starts with defaults", e);
+        }
+        LOGGER.info("Starting server at {}:{}", host, String.valueOf(port));
+
         final Context classContext = new Context();
         final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
         DBService dbService = null;
@@ -44,7 +53,7 @@ public class Main {
         try {
             dbService = new DBServiceImpl(cfgDb);
         } catch (LaunchException e) {
-            LOGGER.fatal("failed launching server", e);
+            LOGGER.fatal("Can't connect to DB", e);
             return;
         }
 
@@ -71,10 +80,15 @@ public class Main {
         final HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{resourceHandler, context});
 
-        final Server server = new Server(port);
+        final Server server = new Server();
+        final ServerConnector http = new ServerConnector(server);
+        http.setHost(host);
+        http.setPort(port);
+
+        server.addConnector(http);
         server.setHandler(handlers);
+
         server.start();
-//        server.join();
         gameMechanics.run();
     }
 }

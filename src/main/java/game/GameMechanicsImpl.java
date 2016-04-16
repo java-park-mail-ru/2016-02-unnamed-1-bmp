@@ -4,22 +4,26 @@ import base.GameMechanics;
 import base.GameUser;
 import base.WebSocketService;
 import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.TimeHelper;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.Map;
 import java.util.Set;
 
 
 public class GameMechanicsImpl implements GameMechanics{
     private static final int STEP_TIME = 100;
+    private static final int GAME_TIME = 10 * 60 * 1000;
+    private static final Logger LOGGER = LogManager.getLogger(GameMechanicsImpl.class);
+
     private WebSocketService webSocketService;
     private String waiter;
     private Map<String, String> waiterBoats;
 
-    private Set<GameSession> allSessions = new HashSet<GameSession>();
-    private Map<String, GameSession> nameToGame = new HashMap<String, GameSession>();
+    private Set<GameSession> allSessions = new HashSet<>();
+    private Map<String, GameSession> nameToGame = new HashMap<>();
 
     public GameMechanicsImpl(WebSocketService webSocketService) {
         this.webSocketService = webSocketService;
@@ -47,13 +51,15 @@ public class GameMechanicsImpl implements GameMechanics{
     }
 
     private void gmStep() {
-//        for (GameSession session : allSessions) {
-//            if (session.getSessionTime() > gameTime) {
-//                boolean firstWin = session.isFirstWin();
-//                webSocketService.notifyGameOver(session.getFirst(), firstWin);
-//                webSocketService.notifyGameOver(session.getSecond(), !firstWin);
-//            }
-//        }
+        for (GameSession session : allSessions) {
+            if (session.getSessionTime() > GAME_TIME) {
+                webSocketService.notifyGameOver(session.getFirst(), true);
+                webSocketService.notifyGameOver(session.getSecond(), true);
+
+                nameToGame.values().removeAll(Collections.singleton(session));
+                allSessions.remove(session);
+            }
+        }
     }
 
     @Override
@@ -67,11 +73,11 @@ public class GameMechanicsImpl implements GameMechanics{
         if(status.equals("lost")){
             webSocketService.notifyGameOver(myUser, true);
             webSocketService.notifyGameOver(enemyUser, false);
+            LOGGER.info("Finished game for players. Winner:{} Loser: {}", myUser, enemyUser);
             return;
         }
         webSocketService.notifyWait(myUser, shootResponce);
         webSocketService.notifyAct(enemyUser, shootResponce);
-
     }
 
     private void startGame(String first, Map<String, String> firstBoats) {
@@ -79,11 +85,14 @@ public class GameMechanicsImpl implements GameMechanics{
         final Map<String, String> secondBoats = new HashMap<>(waiterBoats);
 
         final GameSession gameSession = new GameSession(first, firstBoats, second, secondBoats);
+
         allSessions.add(gameSession);
         nameToGame.put(first, gameSession);
         nameToGame.put(second, gameSession);
 
         webSocketService.notifyStartGame(gameSession.getSelf(first));
         webSocketService.notifyStartGame(gameSession.getSelf(second));
+
+        LOGGER.info("Started game for players {} vs. {}", first, second);
     }
 }

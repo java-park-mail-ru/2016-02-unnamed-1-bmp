@@ -1,6 +1,5 @@
 package frontend.servlets;
 
-import base.WebSocketService;
 import frontend.GameWebSocketCreator;
 import main.Context;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet(name = "WebSocketGameServlet", urlPatterns = {"/gameplay"})
 public class WebSocketGameServlet extends WebSocketServlet {
     Context context;
+
     private static final Logger LOGGER = LogManager.getLogger(WebSocketGameServlet.class);
     private static final int LOGOUT_TIME = 20 * 60 * 1000;
 
