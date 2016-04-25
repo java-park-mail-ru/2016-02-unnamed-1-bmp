@@ -78,16 +78,6 @@ public class UserDataSetDAO {
         return (List<UserDataSet>) criteria.list();
     }
 
-
-    @SuppressWarnings("unchecked")
-    public List<UserDataSet> readAll(boolean skipDeleted) {
-        final Criteria criteria = session.createCriteria(UserDataSet.class);
-        if (skipDeleted) {
-            criteria.add(Restrictions.eq("isDeleted", false));
-        }
-        return (List<UserDataSet>) criteria.list();
-    }
-
     public boolean checkUniqueLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)

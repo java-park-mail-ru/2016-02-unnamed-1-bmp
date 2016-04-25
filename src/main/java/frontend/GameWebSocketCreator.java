@@ -10,9 +10,6 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 
@@ -23,12 +20,21 @@ public class GameWebSocketCreator implements WebSocketCreator {
     private static final Logger LOGGER = LogManager.getLogger(GameWebSocketCreator.class);
 
     public enum AnimalPlayer {
+        CAMEL,
         CHUPACABRA,
+        GIRAFFE,
         MONKEY,
         GRIZZLY,
         CHAMELEON,
         ELEPHANT,
         HYENA,
+        FROG,
+        SHEEP,
+        TURTLE,
+        IGUANA,
+        LEMUR,
+        HIPPO,
+        COYOTE,
         WOLF,
         PANDA,
         PYTHON;

@@ -160,9 +160,9 @@ public class GameWebSocket {
         LOGGER.info("Closing socket status: {} reason: {}", statusCode, reason);
     }
 
-    public Session getSession() {
-        return session;
-    }
+//    public Session getSession() {
+//        return session;
+//    }
 
     private Map<String, String>  parseIncomingShips(JsonElement ships) throws JsonSyntaxException {
         final Map<String, String> userBoats = new HashMap<>();
