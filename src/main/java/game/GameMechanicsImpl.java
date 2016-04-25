@@ -10,8 +10,6 @@ import org.apache.logging.log4j.Logger;
 import utils.TimeHelper;
 
 import java.util.*;
-import java.util.Map;
-import java.util.Set;
 
 
 public class GameMechanicsImpl implements GameMechanics{
@@ -19,12 +17,12 @@ public class GameMechanicsImpl implements GameMechanics{
     private static final int GAME_TIME = 10 * 60 * 1000;
     private static final Logger LOGGER = LogManager.getLogger(GameMechanicsImpl.class);
 
-    private WebSocketService webSocketService;
+    private final WebSocketService webSocketService;
     private String waiter;
     private Map<String, String> waiterBoats;
 
-    private Set<GameSession> allSessions = new HashSet<>();
-    private Map<String, GameSession> nameToGame = new HashMap<>();
+    private final Set<GameSession> allSessions = new HashSet<>();
+    private final Map<String, GameSession> nameToGame = new HashMap<>();
 
     public GameMechanicsImpl(WebSocketService webSocketService) {
         this.webSocketService = webSocketService;
@@ -56,6 +54,7 @@ public class GameMechanicsImpl implements GameMechanics{
         }
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     @Override
     public void run() {
         while (true) {
@@ -65,15 +64,13 @@ public class GameMechanicsImpl implements GameMechanics{
     }
 
     private void gmStep() {
-        for (GameSession session : allSessions) {
-            if (session.getSessionTime() > GAME_TIME) {
-                webSocketService.notifyGameOver(session.getFirst(), true);
-                webSocketService.notifyGameOver(session.getSecond(), true);
+        allSessions.stream().filter(session -> session.getSessionTime() > GAME_TIME).forEach(session -> {
+            webSocketService.notifyGameOver(session.getFirst(), true);
+            webSocketService.notifyGameOver(session.getSecond(), true);
 
-                nameToGame.values().removeAll(Collections.singleton(session));
-                allSessions.remove(session);
-            }
-        }
+            nameToGame.values().removeAll(Collections.singleton(session));
+            allSessions.remove(session);
+        });
     }
 
     @Override

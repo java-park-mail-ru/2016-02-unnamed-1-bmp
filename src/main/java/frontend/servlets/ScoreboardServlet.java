@@ -1,6 +1,5 @@
 package frontend.servlets;
 
-import base.AccountService;
 import base.UserService;
 import base.datasets.UserDataSet;
 import com.google.gson.JsonObject;
@@ -19,9 +18,8 @@ import java.util.List;
 
 
 public class ScoreboardServlet extends HttpServlet {
-    public static final String PATH = "/api/scoreboard";
     private static final Logger LOGGER = LogManager.getLogger(ScoreboardServlet.class);
-    private UserService userService;
+    private final UserService userService;
 
     public ScoreboardServlet(Context context) {
         this.userService = (UserService) context.get(UserService.class);
@@ -31,18 +29,16 @@ public class ScoreboardServlet extends HttpServlet {
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException{
         final JsonObject responseBody = new JsonObject();
-        List<UserDataSet> topTen = null;
+        final List<UserDataSet> topTen;
         try {
             topTen = userService.getTop();
         } catch (DatabaseException e) {
             LOGGER.error(e);
             return;
         }
-
         for(UserDataSet user: topTen) {
             responseBody.add(user.getLogin(), new JsonPrimitive(user.getScore()));
         }
-
         response.getWriter().println(responseBody);
     }
 

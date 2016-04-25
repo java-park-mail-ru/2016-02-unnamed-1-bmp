@@ -2,7 +2,6 @@ package frontend;
 
 import base.AccountService;
 import base.UserService;
-import base.WebSocketService;
 import dbservice.DatabaseException;
 import main.Context;
 import org.apache.logging.log4j.LogManager;
@@ -18,9 +17,9 @@ import java.util.Random;
 
 
 public class GameWebSocketCreator implements WebSocketCreator {
-    Context context;
-    private AccountService accountService;
-    private UserService userService;
+    final Context context;
+    private final AccountService accountService;
+    private final UserService userService;
     private static final Logger LOGGER = LogManager.getLogger(GameWebSocketCreator.class);
 
     public enum AnimalPlayer {
@@ -34,13 +33,11 @@ public class GameWebSocketCreator implements WebSocketCreator {
         PANDA,
         PYTHON;
 
-        private static final List<AnimalPlayer> VALUES =
-                Collections.unmodifiableList(Arrays.asList(values()));
-        private static final int SIZE = VALUES.size();
+        private static final int SIZE = AnimalPlayer.values().length;
         private static final Random RANDOM = new Random();
 
         public static AnimalPlayer randomAnimal() {
-            return VALUES.get(RANDOM.nextInt(SIZE));
+            return AnimalPlayer.values()[RANDOM.nextInt(SIZE)];
         }
     }
 

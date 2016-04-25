@@ -18,10 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class SignUpServlet extends HttpServlet {
-    public static final String PATH = "/api/user/*";
     private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
-    private AccountService accountService;
-    private UserService userService;
+    private final AccountService accountService;
+    private final UserService userService;
 
     public SignUpServlet(Context context) {
         this.userService = (UserService) context.get(UserService.class);
@@ -61,7 +60,7 @@ public class SignUpServlet extends HttpServlet {
         final String login = message.getAsJsonObject().get("login").getAsString();
         final String email = message.getAsJsonObject().get("email").getAsString();
         final String password = message.getAsJsonObject().get("password").getAsString();
-        long newUserId = 0;
+        final long newUserId;
         try {
             if (!userService.isEmailUnique(email)) {
                 goOutFieldError(response, responseBody, HttpServletResponse.SC_FORBIDDEN,
@@ -96,7 +95,7 @@ public class SignUpServlet extends HttpServlet {
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-        UserDataSet currUser = null;
+        final UserDataSet currUser;
         try {
             currUser = checkRequest(request);
         } catch (NumberFormatException e) {
@@ -158,7 +157,7 @@ public class SignUpServlet extends HttpServlet {
         final String requestUserId = request.getPathInfo().replace("/", "");
         if (requestUserId == null || !requestUserId.matches("^\\d+$"))
             return null;
-        long userDbId = 0;
+        final long userDbId;
         try {
             userDbId = Integer.parseInt(requestUserId);
         } catch (NumberFormatException ignore) {

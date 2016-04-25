@@ -49,7 +49,7 @@ public class Main {
 
         final Context classContext = new Context();
         final Configuration cfgDb = new Configuration().configure("dbconfig.xml");
-        DBService dbService = null;
+        final DBService dbService;
 
         try {
             dbService = new DBServiceImpl(cfgDb);

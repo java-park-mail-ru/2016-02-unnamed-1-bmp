@@ -11,7 +11,7 @@ import javax.servlet.annotation.WebServlet;
 
 @WebServlet(name = "WebSocketGameServlet", urlPatterns = {"/gameplay"})
 public class WebSocketGameServlet extends WebSocketServlet {
-    Context context;
+    final Context context;
 
     private static final Logger LOGGER = LogManager.getLogger(WebSocketGameServlet.class);
     private static final int LOGOUT_TIME = 20 * 60 * 1000;

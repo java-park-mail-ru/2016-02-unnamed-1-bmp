@@ -21,13 +21,13 @@ import java.util.Map;
 @WebSocket
 public class GameWebSocket {
     private static final int INDLE_SHIPS_NUM = 20;
-    private String myName;
-    private Long currentUserId;
+    private final String myName;
+    private final Long currentUserId;
 
     private Session session;
-    private WebSocketService webSocketService;
-    private GameMechanics gameMechanics;
-    private UserService userService;
+    private final WebSocketService webSocketService;
+    private final GameMechanics gameMechanics;
+    private final UserService userService;
 
     private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
 
@@ -178,7 +178,6 @@ public class GameWebSocket {
             final String shipName = "three-decked" + jsonArray.get(0).toString();
             for (int j = 0; j < 3; ++j) {
                 final String threePlace = jsonArray.get(j).toString();
-                ;
                 userBoats.put(threePlace, shipName);
             }
         }

@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public class UserServiceImpl implements UserService {
-    private DBService dbService;
+    private final DBService dbService;
 
     public UserServiceImpl(DBService dbService) throws HibernateException {
         this.dbService = dbService;
@@ -25,10 +25,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean incrementUserScore(long id) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
+    public void incrementUserScore(long id) throws DatabaseException {
+        dbService.doWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            return dao.incrementScore(id);
+            dao.incrementScore(id);
         });
     }
 
@@ -62,14 +62,6 @@ public class UserServiceImpl implements UserService {
         return dbService.doReturningWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             return dao.markAsDeletedById(id);
-        });
-    }
-
-    @Override
-    public List<UserDataSet> getUsers(boolean getAll) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
-            final UserDataSetDAO dao = new UserDataSetDAO(session);
-            return dao.readAll(getAll);
         });
     }
 

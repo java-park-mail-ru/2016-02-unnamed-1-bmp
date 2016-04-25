@@ -10,7 +10,7 @@ import org.hibernate.LockMode;
 import java.util.List;
 
 public class UserDataSetDAO {
-    private Session session;
+    private final Session session;
 
     public UserDataSetDAO(Session session) {
         this.session = session;
@@ -45,21 +45,6 @@ public class UserDataSetDAO {
         return affected == 1;
     }
 
-    @SuppressWarnings("JpaQlInspection")
-    public boolean updateUserInfo(Long id, String login, String passw) {
-        if ( !checkUniqueLogin(login) ){
-            return false;
-        }
-        final int affected = session.createQuery("UPDATE UserDataSet a SET " +
-                "a.login = :log, a.password = :pass WHERE a.id = :id AND a.isDeleted = :isDel")
-                .setParameter("log", login)
-                .setParameter("pass", passw)
-                .setParameter("id", id)
-                .setParameter("isDel", false)
-                .executeUpdate();
-        return affected == 1;
-    }
-
     public UserDataSet readByLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         return (UserDataSet) criteria
@@ -69,7 +54,7 @@ public class UserDataSetDAO {
     }
 
     @SuppressWarnings("JpaQlInspection")
-    public boolean incrementScore(long id) {
+    public void incrementScore(long id) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet user =  (UserDataSet) criteria
                 .add(Restrictions.eq("id", id))
@@ -77,14 +62,14 @@ public class UserDataSetDAO {
                 .uniqueResult();
 
         final int currScore = user.getScore();
-        final int affected = session.createQuery("UPDATE UserDataSet a SET " +
+        session.createQuery("UPDATE UserDataSet a SET " +
                 "a.score = :scr WHERE a.id = :id")
                 .setParameter("scr", currScore)
                 .setParameter("id", id)
                 .executeUpdate();
-        return affected == 1;
     }
 
+    @SuppressWarnings("unchecked")
     public List<UserDataSet> getTopTen() {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         criteria.add(Restrictions.eq("isDeleted", false))

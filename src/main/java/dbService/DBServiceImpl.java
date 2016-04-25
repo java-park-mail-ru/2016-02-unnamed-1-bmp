@@ -3,7 +3,6 @@ package dbservice;
 import base.DBService;
 import base.HibernateUnit;
 import base.HibernateUnitVoid;
-import base.UserService;
 import base.datasets.UserDataSet;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
@@ -40,39 +39,55 @@ public class DBServiceImpl implements DBService {
     @Override
     @Nullable
     public <T>T doReturningWork(@NotNull HibernateUnit<T> work) throws DatabaseException {
-        final Session session = sessionFactory.openSession();
-        try {
+//        final Session session = sessionFactory.openSession();
+//        try {
+//            session.getTransaction().begin();
+//            final T result = work.operate(session);
+//            session.getTransaction().commit();
+//            return result;
+//        } catch ( RuntimeException e ) {
+//            if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
+//                    || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
+//                session.getTransaction().rollback();
+//            }
+//            throw new DatabaseException("Fail to perform a transaction",e);
+//        } finally {
+//            session.close();
+//        }
+//        Session session;
+        try( Session session = sessionFactory.openSession()) {
             session.getTransaction().begin();
             final T result = work.operate(session);
             session.getTransaction().commit();
             return result;
-        } catch ( RuntimeException e ) {
-            if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
-                    || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
-                session.getTransaction().rollback();
-            }
+        } catch (HibernateException e) {
             throw new DatabaseException("Fail to perform a transaction",e);
-        } finally {
-            session.close();
         }
     }
 
     @Override
     @Nullable
     public void doWork(@NotNull HibernateUnitVoid work) throws DatabaseException {
-        final Session session = sessionFactory.openSession();
-        try {
+//        final Session session = sessionFactory.openSession();
+//        try {
+//            session.getTransaction().begin();
+//            work.operate(session);
+//            session.getTransaction().commit();
+//        } catch ( RuntimeException e ) {
+//            if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
+//                    || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
+//                session.getTransaction().rollback();
+//            }
+//            throw new DatabaseException("Fail to perform database transaction",e);
+//        } finally {
+//            session.close();
+//        }
+        try( Session session = sessionFactory.openSession()) {
             session.getTransaction().begin();
             work.operate(session);
             session.getTransaction().commit();
-        } catch ( RuntimeException e ) {
-            if ( session.getTransaction().getStatus() == TransactionStatus.ACTIVE
-                    || session.getTransaction().getStatus() == TransactionStatus.MARKED_ROLLBACK ) {
-                session.getTransaction().rollback();
-            }
-            throw new DatabaseException("Fail to perform database transaction",e);
-        } finally {
-            session.close();
+        } catch (HibernateException e) {
+            throw new DatabaseException("Fail to perform a transaction",e);
         }
     }
 

@@ -1,7 +1,6 @@
 package frontend.servlets;
 
 import base.AccountService;
-import base.DBService;
 import base.UserService;
 import com.google.gson.*;
 
@@ -21,10 +20,9 @@ import main.Context;
 import base.datasets.UserDataSet;
 
 public class SignInServlet extends HttpServlet {
-    public static final String PATH = "/api/session";
     private static final Logger LOGGER = LogManager.getLogger(SignInServlet.class);
-    private AccountService accountService;
-    private UserService userService;
+    private final AccountService accountService;
+    private final UserService userService;
 
     public SignInServlet(Context context) {
         this.userService = (UserService) context.get(UserService.class);
@@ -82,7 +80,7 @@ public class SignInServlet extends HttpServlet {
 
         final String login = message.getAsJsonObject().get("login").getAsString();
         final String password = message.getAsJsonObject().get("password").getAsString();
-        UserDataSet user = null;
+        final UserDataSet user;
         try {
             user = userService.getUserByLogin(login);
         } catch (DatabaseException e) {

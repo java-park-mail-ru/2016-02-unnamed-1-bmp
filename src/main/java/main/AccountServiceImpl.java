@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import base.AccountService;
 
 public class AccountServiceImpl implements AccountService {
-    private ConcurrentMap<String, Long> sessions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> sessions = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LogManager.getLogger(AccountServiceImpl.class);
 
     @Override

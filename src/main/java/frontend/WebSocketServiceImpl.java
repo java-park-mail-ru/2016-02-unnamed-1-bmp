@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 
 
 public class WebSocketServiceImpl implements WebSocketService {
-    private ConcurrentMap<String, GameWebSocket> userSockets = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, GameWebSocket> userSockets = new ConcurrentHashMap<>();
 
     @Override
     public void addUser(@NotNull GameWebSocket user) {

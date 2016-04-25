@@ -12,7 +12,7 @@ public class GameSession {
     private final GameUser first;
     private final GameUser second;
 
-    private Map<String, GameUser> users = new HashMap<>();
+    private final Map<String, GameUser> users = new HashMap<>();
 
     public GameSession(String first, Map<String, String>  firstBoats,
                        String second, Map<String, String> secondBoats) {

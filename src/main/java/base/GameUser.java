@@ -12,9 +12,9 @@ public class GameUser {
     public static final int ALL_BOATS_NUM = 20;
     private final String myName;
     private String enemyName;
-    private Map<String, String> aliveBoats;
-    private Map<String, String> killedBoats;
-    private Map<String, Integer> aliveCounters;
+    private final Map<String, String> aliveBoats;
+    private final Map<String, String> killedBoats;
+    private final Map<String, Integer> aliveCounters;
 
     public GameUser(String myName, Map<String, String> myBoats) {
         this.myName = myName;
@@ -73,9 +73,7 @@ public class GameUser {
             if(alive == 0){
                 responseBody.add("status", new JsonPrimitive("killed"));
                 final JsonArray jsonArray = new JsonArray();
-                killedBoats.entrySet().stream().filter(e -> e.getValue().equals(boatName)).forEach(e -> {
-                    jsonArray.add(e.getKey());
-                });
+                killedBoats.entrySet().stream().filter(e -> e.getValue().equals(boatName)).forEach(e -> jsonArray.add(e.getKey()));
                 responseBody.add("coordinates", jsonArray);
                 return responseBody;
             }

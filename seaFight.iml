@@ -10,6 +10,7 @@
         <naming-strategy-map />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/setups/db_conf" />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/setups/dbconfig.xml" />
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/setups/h2config.xml" />
       </configuration>
     </facet>
   </component>
