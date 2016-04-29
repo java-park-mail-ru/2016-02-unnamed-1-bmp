@@ -1,15 +1,16 @@
 package main;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import base.AccountService;
 
 public class AccountServiceImpl implements AccountService {
-    private Map<String, Long> sessions = new HashMap<>();
+    private final ConcurrentMap<String, Long> sessions = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LogManager.getLogger(AccountServiceImpl.class);
 
     @Override

@@ -7,6 +7,9 @@ import static org.junit.Assert.*;
 
 
 public class UserServiceImplTest extends TestsWithDb {
+
+    public static final long HUGE_ID = 100000000L;
+
     @Test
     public void testSave() throws DatabaseException {
         final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
@@ -49,7 +52,7 @@ public class UserServiceImplTest extends TestsWithDb {
 
     @Test
     public void testDeleteUserByIdFail() throws DatabaseException {
-        assertFalse(userService.deleteUserById(100000000L));
+        assertFalse(userService.deleteUserById(HUGE_ID));
     }
 
     @Test
