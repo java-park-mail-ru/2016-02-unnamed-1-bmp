@@ -75,11 +75,6 @@ public class SignUpServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
-        if(request.getRequestURI().contains("/guest")) {
-            this.doPostAnonymous(request, response);
-            return;
-        }
-
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
@@ -99,6 +94,12 @@ public class SignUpServlet extends HttpServlet {
         }
 
         LOGGER.info("Incoming message: {}", message.toString());
+
+        if(message.getAsJsonObject().get("guest") != null) {
+            this.doPostAnonymous(request, response);
+            return;
+        }
+
         if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
                 || message.getAsJsonObject().get("password") == null) {
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");

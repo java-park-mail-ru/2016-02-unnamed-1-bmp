@@ -1,5 +1,6 @@
 package frontend.servlets;
 
+import base.UserService;
 import base.datasets.UserDataSet;
 import dbservice.DatabaseException;
 import frontend.FrontendTest;
@@ -36,13 +37,14 @@ public class SignUpServletTest extends FrontendTest{
         when(userService.getUserByLogin("admin")).thenReturn(userDataSet);
         when(userService.isEmailUnique("admin@admin.com")).thenReturn(true);
         when(userService.isLoginUnique("admin")).thenReturn(true);
-        when(userDataSet.getId()).thenReturn(1L);
+
+        when(((UserService) context.get(UserService.class)).saveUser(any(UserDataSet.class))).thenReturn(1L);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
-        assertThat(stringWriter.toString(), StringContains.containsString("{\"id\":1"));
+        assertThat(stringWriter.toString(), StringContains.containsString("\"id\":1"));
     }
 
 

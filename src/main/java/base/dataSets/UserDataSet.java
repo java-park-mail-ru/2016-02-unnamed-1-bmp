@@ -82,4 +82,8 @@ public class UserDataSet implements Serializable {
     public Integer getScore() {
         return this.score;
     }
+
+    public Boolean getIsAnonymous() {
+        return this.isAnonymous;
+    }
 }

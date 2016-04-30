@@ -13,8 +13,16 @@ public class UserServiceImplTest extends TestsWithDb {
     @Test
     public void testSave() throws DatabaseException {
         final UserDataSet userDataSet = new UserDataSet("admin", "admin", "admin@admin.com");
-        userService.saveUser(userDataSet);
-        assertEquals(userService.getUserByEmail("admin@admin.com").getId(), userDataSet.getId());
+        final long id = userService.saveUser(userDataSet);
+        assertEquals(userService.getUserById(id).getId(), userDataSet.getId());
+        assertFalse(userService.getUserById(id).getIsAnonymous());
+    }
+
+    @Test
+    public void testSaveAnonymous() throws DatabaseException {
+        final UserDataSet userDataSet = new UserDataSet("admin");
+        final Long id = userService.saveUser(userDataSet);
+        assertTrue(userService.getUserById(id).getIsAnonymous());
     }
 
     @Test
@@ -27,6 +35,14 @@ public class UserServiceImplTest extends TestsWithDb {
             assertNotNull(e);
         }
         assertEquals(userService.getUserByEmail("admin@admin.com").getId(),userDataSet.getId());
+    }
+
+    @Test
+    public void testSaveUserAnonymousDoubleLogin() throws DatabaseException {
+        final Long id1 = userService.saveUser(new UserDataSet("admin"));
+        final Long id2 = userService.saveUser(new UserDataSet("admin"));
+
+        assertNotEquals(userService.getUserById(id1).getId(), userService.getUserById(id2).getId());
     }
 
     @Test
