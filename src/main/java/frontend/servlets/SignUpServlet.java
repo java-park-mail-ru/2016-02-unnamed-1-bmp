@@ -57,9 +57,8 @@ public class SignUpServlet extends HttpServlet {
         final String login = message.getAsJsonObject().get("login").getAsString();
         final long newUserId;
         try {
-            userService.saveUser(new UserDataSet(login));
+            newUserId = userService.saveUser(new UserDataSet(login));
             final String sessionId = request.getSession().getId();
-            newUserId = userService.getUserByLogin(login).getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
             goOutDatabseException(response, responseBody,
@@ -69,7 +68,7 @@ public class SignUpServlet extends HttpServlet {
         }
         responseBody.add("id", new JsonPrimitive(newUserId));
         response.setStatus(HttpServletResponse.SC_OK);
-        LOGGER.info("Rigister user {}", login);
+        LOGGER.info("Register anonymous user {}", login);
         response.getWriter().println(responseBody);
     }
 
@@ -124,9 +123,8 @@ public class SignUpServlet extends HttpServlet {
                 response.getWriter().println(responseBody);
                 return;
             }
-            userService.saveUser(new UserDataSet(login, password, email));
+            newUserId = userService.saveUser(new UserDataSet(login, password, email));
             final String sessionId = request.getSession().getId();
-            newUserId = userService.getUserByLogin(login).getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
             goOutDatabseException(response, responseBody,
@@ -136,7 +134,7 @@ public class SignUpServlet extends HttpServlet {
         }
         responseBody.add("id", new JsonPrimitive(newUserId));
         response.setStatus(HttpServletResponse.SC_OK);
-        LOGGER.info("Rigister user {}", login);
+        LOGGER.info("Register user {}", login);
         response.getWriter().println(responseBody);
     }
 

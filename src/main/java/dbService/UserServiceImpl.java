@@ -17,10 +17,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveUser(UserDataSet dataSet) throws DatabaseException {
-        dbService.doWork((session)-> {
+    public Long saveUser(UserDataSet dataSet) throws DatabaseException {
+        return dbService.doReturningWork((session)-> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            dao.save(dataSet);
+            return dao.save(dataSet);
         });
     }
 

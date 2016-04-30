@@ -16,8 +16,9 @@ public class UserDataSetDAO {
         this.session = session;
     }
 
-    public void save(UserDataSet dataSet) {
-        session.save(dataSet);
+    public Long save(UserDataSet dataSet) {
+        Long id = (Long) session.save(dataSet);
+        return id;
     }
 
     public UserDataSet readById (long id) {
@@ -33,6 +34,7 @@ public class UserDataSetDAO {
         return (UserDataSet) criteria
                 .add(Restrictions.eq("email", email))
                 .add(Restrictions.eq("isDeleted", false))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
     }
 
@@ -50,6 +52,7 @@ public class UserDataSetDAO {
         return (UserDataSet) criteria
                 .add(Restrictions.eq("login", login))
                 .add(Restrictions.eq("isDeleted", false))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
     }
 
@@ -82,6 +85,7 @@ public class UserDataSetDAO {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("login", login))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
         return userExist == null;
     }

@@ -8,8 +8,8 @@ import org.hibernate.annotations.Type;
 @Entity
 @Table(name= "users", indexes = {
         @Index(name="deleted_idx", columnList = "user_is_del"),
-        @Index(name="login_idx", columnList = "user_login," + "user_is_del"),
-        @Index(name="email_idx", columnList = "user_email," + "user_is_del")
+        @Index(name="login_idx", columnList = "user_login," + "user_is_del," + "user_is_anon"),
+        @Index(name="email_idx", columnList = "user_email," + "user_is_del," + "user_is_anon")
 })
 public class UserDataSet implements Serializable {
 
@@ -18,7 +18,7 @@ public class UserDataSet implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_login", unique = true)
+    @Column(name = "user_login")
     private String login;
 
     @Column(name = "user_pass")
