@@ -169,6 +169,7 @@ public class SignUpServlet extends HttpServlet {
         responseBody.add("id", new JsonPrimitive(currUserId));
         responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
         responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
+        responseBody.add("isAnonymous", new JsonPrimitive(currUser.getIsAnonymous()));
         LOGGER.info("Get info about user {}", currUser.getLogin());
         response.getWriter().println(responseBody);
     }
