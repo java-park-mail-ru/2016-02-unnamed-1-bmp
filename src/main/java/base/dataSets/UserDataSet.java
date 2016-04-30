@@ -34,6 +34,10 @@ public class UserDataSet implements Serializable {
     @Column(name = "user_score")
     private Integer score;
 
+    @Column(name = "user_is_anon")
+    @Type(type="yes_no")
+    private Boolean isAnonymous = false;
+
     public UserDataSet() {
 
     }
@@ -45,6 +49,17 @@ public class UserDataSet implements Serializable {
         this.email = email;
         this.isDeleted = false;
         this.score = 0;
+        this.isAnonymous = false;
+    }
+
+    public UserDataSet (String login) {
+        this.id = -1L;
+        this.login = login;
+        this.password = null;
+        this.email = null;
+        this.isDeleted = false;
+        this.score = 0;
+        this.isAnonymous = true;
     }
 
 

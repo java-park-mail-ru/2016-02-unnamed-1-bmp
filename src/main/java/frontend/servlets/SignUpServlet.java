@@ -27,10 +27,60 @@ public class SignUpServlet extends HttpServlet {
         this.accountService = (AccountService) context.get(AccountService.class);
     }
 
+    public void doPostAnonymous(HttpServletRequest request,
+                                HttpServletResponse response) throws ServletException, IOException {
+        final JsonObject responseBody = new JsonObject();
+        final BufferedReader bufferedReader = request.getReader();
+        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
+        JsonElement message = new JsonObject();
+        if (!message.isJsonObject()) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not a JSON");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        try {
+            if (jsonParser.hasNext()) message = jsonParser.next();
+        } catch (JsonParseException e) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        LOGGER.info("Incoming message: {}", message.toString());
+        if (message.getAsJsonObject().get("login") == null) {
+            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");
+            response.getWriter().println(responseBody);
+            return;
+        }
+
+        final String login = message.getAsJsonObject().get("login").getAsString();
+        final long newUserId;
+        try {
+            userService.saveUser(new UserDataSet(login));
+            final String sessionId = request.getSession().getId();
+            newUserId = userService.getUserByLogin(login).getId();
+            accountService.addSessions(sessionId, newUserId);
+        } catch (DatabaseException e) {
+            goOutDatabseException(response, responseBody,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            response.getWriter().println(responseBody);
+            return;
+        }
+        responseBody.add("id", new JsonPrimitive(newUserId));
+        response.setStatus(HttpServletResponse.SC_OK);
+        LOGGER.info("Rigister user {}", login);
+        response.getWriter().println(responseBody);
+    }
 
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        if(request.getRequestURI().contains("/guest")) {
+            this.doPostAnonymous(request, response);
+            return;
+        }
+
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
