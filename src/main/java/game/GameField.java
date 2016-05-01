@@ -21,7 +21,7 @@ public class GameField {
     public boolean isValidShip(GameFieldShip ship) {
         boolean isValid = ship.isValidForGameFieldProperties(this.gameFieldProperties);
         isValid = isValid && this.countShips(ship.getLength()) < this.gameFieldProperties.getShips(ship.getLength());
-        isValid = isValid && !(this.ships.stream().allMatch((curShip) -> !curShip.intersects(ship)));
+        isValid = isValid && (this.ships.stream().allMatch((curShip) -> !curShip.intersects(ship)));
 
         return isValid;
     }
@@ -34,18 +34,20 @@ public class GameField {
         return this.ships.size();
     }
 
-    public boolean shoot(int x, int y) { // TODO: shoot result
-        try {
-            for(GameFieldShip ship : this.ships) {
-                if(ship.shoot(x, y)) {
-                    return true;
+    public GameFieldShootResult shoot(int x, int y) {
+        for (GameFieldShip ship : this.ships) {
+            try {
+                if (ship.shoot(x, y)) {
+                    final GameFieldShootResult.GameFieldShootState state = ship.isKilled() ?
+                            GameFieldShootResult.GameFieldShootState.STATE_KILLED :
+                            GameFieldShootResult.GameFieldShootState.STATE_WOUND;
+                    return new GameFieldShootResult(state, ship);
                 }
+            } catch (GameFieldShipException e) {
+                return new GameFieldShootResult(GameFieldShootResult.GameFieldShootState.STATE_ALREADY, ship);
             }
         }
-        catch(GameFieldShipException e) {
-            return false;
-        }
-        return false;
+        return new GameFieldShootResult(GameFieldShootResult.GameFieldShootState.STATE_MISS);
     }
 
     public boolean isKilled() {
@@ -53,8 +55,8 @@ public class GameField {
     }
 
     public boolean isValid() {
-        for(int i = 1; i <= this.gameFieldProperties.getMaxDeck(); i++) {
-            if(this.gameFieldProperties.getShips(i) != this.countShips(i)) {
+        for (int i = 1; i <= this.gameFieldProperties.getMaxDeck(); i++) {
+            if (this.gameFieldProperties.getShips(i) != this.countShips(i)) {
                 return false;
             }
         }
