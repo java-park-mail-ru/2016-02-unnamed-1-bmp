@@ -99,4 +99,51 @@ public class GameFieldShip {
 
         return isValid;
     }
+
+    public ArrayList<GameFieldShipDeck> getDecks() {
+        final ArrayList<GameFieldShipDeck> result = new ArrayList<>();
+        for(int i = 0; i < this.length; i++) {
+            final int curX = this.isVertical ? this.startX : this.startX + i;
+            final int curY = this.isVertical ? this.startY + i : this.startY;
+            result.add(new GameFieldShipDeck(curX, curY));
+        }
+        return result;
+    }
+
+    public ArrayList<GameFieldShipDeck> getNearDecks(GameFieldProperties properties) {
+        final ArrayList<GameFieldShipDeck> result = new ArrayList<>();
+
+        if(this.isVertical) {
+            for(int y = this.startY - 1; y <= this.startY + this.length; y++) {
+                if(y > 0 && y <= properties.getSize()) {
+                    if(this.startX > 1) {
+                        result.add(new GameFieldShipDeck(this.startX - 1, y));
+                    }
+                    if(this.startX < properties.getSize()) {
+                        result.add(new GameFieldShipDeck(this.startX + 1, y));
+                    }
+                    if(y == this.startY - 1 || y == this.startY + this.length) {
+                        result.add(new GameFieldShipDeck(this.startX, y));
+                    }
+                }
+            }
+        }
+        else
+        {
+            for(int x = this.startX - 1; x <= this.startX + this.length; x++) {
+                if(x > 0 && x <= properties.getSize()) {
+                    if(this.startY > 1) {
+                        result.add(new GameFieldShipDeck(x, this.startY - 1));
+                    }
+                    if(this.startY < properties.getSize()) {
+                        result.add(new GameFieldShipDeck(x, this.startY + 1));
+                    }
+                    if(x == this.startX - 1 || x == this.startX + this.length) {
+                        result.add(new GameFieldShipDeck(x, this.startY));
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }
