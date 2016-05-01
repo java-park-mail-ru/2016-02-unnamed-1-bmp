@@ -27,6 +27,18 @@ public class GameFieldShip {
         return this.length;
     }
 
+    public int getX() {
+        return this.startX;
+    }
+
+    public int getY() {
+        return this.startY;
+    }
+
+    public boolean isVertical() {
+        return this.isVertical;
+    }
+
     public boolean isKilled() {
         return !this.decks.contains(true);
     }
