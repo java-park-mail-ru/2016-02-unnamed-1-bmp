@@ -41,13 +41,13 @@ public class GameField {
                     final GameFieldShootResult.GameFieldShootState state = ship.isKilled() ?
                             GameFieldShootResult.GameFieldShootState.STATE_KILLED :
                             GameFieldShootResult.GameFieldShootState.STATE_WOUND;
-                    return new GameFieldShootResult(state, ship);
+                    return new GameFieldShootResult(x, y, state, ship);
                 }
             } catch (GameFieldShipException e) {
-                return new GameFieldShootResult(GameFieldShootResult.GameFieldShootState.STATE_ALREADY, ship);
+                return new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_ALREADY, ship);
             }
         }
-        return new GameFieldShootResult(GameFieldShootResult.GameFieldShootState.STATE_MISS);
+        return new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_MISS);
     }
 
     public boolean isKilled() {

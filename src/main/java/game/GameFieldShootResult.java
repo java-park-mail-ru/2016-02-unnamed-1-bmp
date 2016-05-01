@@ -11,18 +11,26 @@ public class GameFieldShootResult {
 
     private GameFieldShootState state;
     private GameFieldShip ship;
+    private int shootX;
+    private int shootY;
 
-    GameFieldShootResult() {
+    GameFieldShootResult(int x, int y) {
+        this.shootX = x;
+        this.shootY = y;
         this.state = GameFieldShootState.STATE_MISS;
         this.ship = null;
     }
 
-    GameFieldShootResult(GameFieldShootState state) {
+    GameFieldShootResult(int x, int y, GameFieldShootState state) {
+        this.shootX = x;
+        this.shootY = y;
         this.state = state;
         this.ship = null;
     }
 
-    GameFieldShootResult(GameFieldShootState state, GameFieldShip ship) {
+    GameFieldShootResult(int x, int y, GameFieldShootState state, GameFieldShip ship) {
+        this.shootX = x;
+        this.shootY = y;
         this.state = state;
         this.ship = ship;
     }
@@ -33,6 +41,14 @@ public class GameFieldShootResult {
 
     public GameFieldShootState getState() {
         return this.state;
+    }
+
+    public int getX() {
+        return this.shootX;
+    }
+
+    public int getY() {
+        return this.shootY;
     }
 
     public boolean isMiss() {
