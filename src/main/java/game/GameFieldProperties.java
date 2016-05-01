@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class GameProperties {
+public class GameFieldProperties {
 
-    private static HashMap<String, GameProperties> loaded = new HashMap<>();
+    private static HashMap<String, GameFieldProperties> loaded = new HashMap<>();
     private Properties gameData = null;
 
-    private GameProperties(Properties gameData) {
+    private GameFieldProperties(Properties gameData) {
         this.gameData = gameData;
     }
 
@@ -40,7 +40,7 @@ public class GameProperties {
     }
 
     @Nullable
-    public static GameProperties getProperties(String gameMode) {
+    public static GameFieldProperties getProperties(String gameMode) {
         if(loaded.containsKey(gameMode)) {
             return loaded.get(gameMode);
         }
@@ -48,7 +48,7 @@ public class GameProperties {
         try(final FileInputStream fileData = new FileInputStream("setups/game/" + gameMode + ".properties")) {
             final Properties gameData = new Properties();
             gameData.load(fileData);
-            final GameProperties gameObject = new GameProperties(gameData);
+            final GameFieldProperties gameObject = new GameFieldProperties(gameData);
             loaded.put(gameMode, gameObject);
             return gameObject;
         }
@@ -61,7 +61,7 @@ public class GameProperties {
     }
 
     @Nullable
-    public static GameProperties getProperties() {
+    public static GameFieldProperties getProperties() {
         return getProperties("10x10");
     }
 }
