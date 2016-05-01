@@ -83,4 +83,18 @@ public class UserServiceImplTest extends TestsWithDb {
         assertFalse(userService.isLoginUnique("admin"));
     }
 
+    @Test
+    public void testIsLoginIniqueAnonymous() throws DatabaseException {
+        userService.saveUser(new UserDataSet("admin"));
+        userService.saveUser(new UserDataSet("admin"));
+        assertTrue(userService.isLoginUnique("admin"));
+    }
+
+    @Test
+    public void testGetByLoginAnonymous() throws DatabaseException {
+        userService.saveUser(new UserDataSet("random"));
+        final UserDataSet user = userService.getUserByLogin("random");
+        assertNull(user);
+    }
+
 }
