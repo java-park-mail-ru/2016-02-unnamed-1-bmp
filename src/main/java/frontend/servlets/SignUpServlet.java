@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Random;
 
 import dbservice.DatabaseException;
 import main.Context;
@@ -21,6 +22,34 @@ public class SignUpServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
     private final AccountService accountService;
     private final UserService userService;
+
+    public enum AnimalPlayer {
+        CAMEL,
+        CHUPACABRA,
+        GIRAFFE,
+        MONKEY,
+        GRIZZLY,
+        CHAMELEON,
+        ELEPHANT,
+        HYENA,
+        FROG,
+        SHEEP,
+        TURTLE,
+        IGUANA,
+        LEMUR,
+        HIPPO,
+        COYOTE,
+        WOLF,
+        PANDA,
+        PYTHON;
+
+        private static final int SIZE = AnimalPlayer.values().length;
+        private static final Random RANDOM = new Random();
+
+        public static AnimalPlayer randomAnimal() {
+            return AnimalPlayer.values()[RANDOM.nextInt(SIZE)];
+        }
+    }
 
     public SignUpServlet(Context context) {
         this.userService = (UserService) context.get(UserService.class);
@@ -38,10 +67,11 @@ public class SignUpServlet extends HttpServlet {
             return;
         }
 
-        final String login = message.getAsJsonObject().get("login").getAsString();
+        final String login = message.getAsJsonObject().get("login").getAsString().trim();
         final long newUserId;
         try {
-            newUserId = userService.saveUser(new UserDataSet(login));
+            final String realLogin = login.isEmpty() ? "Anonymous " + AnimalPlayer.randomAnimal().toString().toLowerCase() : login;
+            newUserId = userService.saveUser(new UserDataSet(realLogin));
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
