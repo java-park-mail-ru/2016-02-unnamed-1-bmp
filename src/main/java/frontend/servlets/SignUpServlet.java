@@ -27,25 +27,9 @@ public class SignUpServlet extends HttpServlet {
         this.accountService = (AccountService) context.get(AccountService.class);
     }
 
-    public void doPostAnonymous(HttpServletRequest request,
+    private void doPostAnonymous(JsonElement message, HttpServletRequest request,
                                 HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
-        final BufferedReader bufferedReader = request.getReader();
-        final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
-        JsonElement message = new JsonObject();
-        if (!message.isJsonObject()) {
-            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not a JSON");
-            response.getWriter().println(responseBody);
-            return;
-        }
-
-        try {
-            if (jsonParser.hasNext()) message = jsonParser.next();
-        } catch (JsonParseException e) {
-            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
-            response.getWriter().println(responseBody);
-            return;
-        }
 
         LOGGER.info("Incoming message: {}", message.toString());
         if (message.getAsJsonObject().get("login") == null) {
@@ -95,8 +79,9 @@ public class SignUpServlet extends HttpServlet {
 
         LOGGER.info("Incoming message: {}", message.toString());
 
-        if(message.getAsJsonObject().get("guest") != null) {
-            this.doPostAnonymous(request, response);
+        final JsonElement isAnonymous = message.getAsJsonObject().get("isAnonymous");
+        if(isAnonymous != null && isAnonymous.getAsBoolean()) {
+            this.doPostAnonymous(message, request, response);
             return;
         }
 

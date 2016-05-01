@@ -38,7 +38,55 @@ public class SignUpServletTest extends FrontendTest{
         when(userService.isEmailUnique("admin@admin.com")).thenReturn(true);
         when(userService.isLoginUnique("admin")).thenReturn(true);
 
-        when(((UserService) context.get(UserService.class)).saveUser(any(UserDataSet.class))).thenReturn(1L);
+        when(userService.saveUser(any(UserDataSet.class))).thenReturn(1L);
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertThat(stringWriter.toString(), StringContains.containsString("\"id\":1"));
+    }
+
+
+    @Test
+    public void testDoPostAnonymous() throws IOException, ServletException, DatabaseException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+        final UserDataSet userDataSet = mock(UserDataSet.class);
+
+        final String input = "{\"login\":\"user\",\"isAnonymous\":true}";
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
+
+        when(request.getReader()).thenReturn(bufferedReader);
+        when(userService.getUserByLogin("user")).thenReturn(userDataSet);
+        when(userService.isLoginUnique("user")).thenReturn(false);
+        when(userService.saveUser(any(UserDataSet.class))).thenReturn(1L);
+
+        final SignUpServlet signUpServlet = new SignUpServlet(context);
+        signUpServlet.doPost(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertThat(stringWriter.toString(), StringContains.containsString("\"id\":1"));
+    }
+
+
+    @Test
+    public void testDoPostNotAnonymous() throws IOException, ServletException, DatabaseException {
+        final StringWriter stringWriter = new StringWriter();
+        final HttpServletResponse response = getMockedResponse(stringWriter);
+        final HttpServletRequest request = getMockedRequest();
+        final UserDataSet userDataSet = mock(UserDataSet.class);
+
+        final String input = "{\"login\":\"admin\",\"password\":\"admin\", \"email\":\"admin@admin.com\", \"isAnonymous\":false}";
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
+
+        when(request.getReader()).thenReturn(bufferedReader);
+        when(userService.getUserByLogin("admin")).thenReturn(userDataSet);
+        when(userService.isEmailUnique("admin@admin.com")).thenReturn(true);
+        when(userService.isLoginUnique("admin")).thenReturn(true);
+
+        when(userService.saveUser(any(UserDataSet.class))).thenReturn(1L);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPost(request, response);
@@ -90,11 +138,15 @@ public class SignUpServletTest extends FrontendTest{
         final StringWriter stringWriter = new StringWriter();
         final HttpServletResponse response = getMockedResponse(stringWriter);
         final HttpServletRequest request = getMockedRequest();
+        final UserDataSet userDataSet = mock(UserDataSet.class);
 
         final String input = "{\"login\":\"admin\",\"password\":\"admin\", \"email\":\"admin@admin.com\"}";
         final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(IOUtils.toInputStream(input)));
 
         when(request.getReader()).thenReturn(bufferedReader);
+        when(userService.getUserByLogin("admin")).thenReturn(userDataSet);
+        when(userService.isEmailUnique("admin@admin.com")).thenReturn(false);
+        when(userService.isLoginUnique("admin")).thenReturn(false);
 
         final SignUpServlet signUpServlet = new SignUpServlet(context);
         signUpServlet.doPost(request, response);
