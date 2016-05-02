@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class GameField {
     private GameFieldProperties gameFieldProperties;
     private ArrayList<GameFieldShip> ships = new ArrayList<>();
+    private ArrayList<GameFieldShootResult> shoots = new ArrayList<>();
 
     public GameField(GameFieldProperties gameFieldProperties) {
         this.gameFieldProperties = gameFieldProperties;
@@ -12,6 +13,10 @@ public class GameField {
 
     public GameFieldProperties getProperties() {
         return this.gameFieldProperties;
+    }
+
+    public ArrayList<GameFieldShip> getShips() {
+        return this.ships;
     }
 
     public boolean addShip(GameFieldShip ship) {
@@ -35,19 +40,30 @@ public class GameField {
     }
 
     public GameFieldShootResult shoot(int x, int y) {
+        GameFieldShootResult result;
         for (GameFieldShip ship : this.ships) {
             try {
                 if (ship.shoot(x, y)) {
                     final GameFieldShootResult.GameFieldShootState state = ship.isKilled() ?
                             GameFieldShootResult.GameFieldShootState.STATE_KILLED :
                             GameFieldShootResult.GameFieldShootState.STATE_WOUND;
-                    return new GameFieldShootResult(x, y, state, ship);
+                    result = new GameFieldShootResult(x, y, state, ship);
+                    this.shoots.add(result);
+                    return result;
                 }
             } catch (GameFieldShipException e) {
-                return new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_ALREADY, ship);
+                result = new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_ALREADY, ship);
+                this.shoots.add(result);
+                return result;
             }
         }
-        return new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_MISS);
+        result = new GameFieldShootResult(x, y, GameFieldShootResult.GameFieldShootState.STATE_MISS);
+        this.shoots.add(result);
+        return result;
+    }
+
+    public ArrayList<GameFieldShootResult> getShoots() {
+        return this.shoots;
     }
 
     public boolean isKilled() {
