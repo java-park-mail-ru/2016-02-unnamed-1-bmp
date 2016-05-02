@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class GameFieldProperties {
+public final class GameFieldProperties {
 
     private static HashMap<String, GameFieldProperties> loaded = new HashMap<>();
     private Properties gameData = null;
@@ -33,7 +33,7 @@ public class GameFieldProperties {
     public int getDecks() {
         final int maxShipDecks = this.getMaxDeck();
         int res = 0;
-        for(int i = 1; i <= maxShipDecks; i++) {
+        for (int i = 1; i <= maxShipDecks; i++) {
             res += i * this.getShips(i);
         }
         return res;
@@ -41,21 +41,19 @@ public class GameFieldProperties {
 
     @Nullable
     public static GameFieldProperties getProperties(String gameMode) {
-        if(loaded.containsKey(gameMode)) {
+        if (loaded.containsKey(gameMode)) {
             return loaded.get(gameMode);
         }
 
-        try(final FileInputStream fileData = new FileInputStream("setups/game/" + gameMode + ".properties")) {
+        try (final FileInputStream fileData = new FileInputStream("setups/game/" + gameMode + ".properties")) {
             final Properties gameData = new Properties();
             gameData.load(fileData);
             final GameFieldProperties gameObject = new GameFieldProperties(gameData);
             loaded.put(gameMode, gameObject);
             return gameObject;
-        }
-        catch(FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             return null;
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             return null;
         }
     }

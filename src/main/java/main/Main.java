@@ -1,13 +1,19 @@
 package main;
 
-import base.*;
+import base.AccountService;
+import base.DBService;
+import base.UserService;
+import base.WebSocketService;
+import dbservice.DBServiceImpl;
 import dbservice.UserServiceImpl;
 import frontend.WebSocketServiceImpl;
 import frontend.servlets.ScoreboardServlet;
 import frontend.servlets.SignInServlet;
 import frontend.servlets.SignUpServlet;
 import frontend.servlets.WebSocketGameServlet;
-import game.GameMechanicsImpl;
+import game.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -15,13 +21,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.hibernate.cfg.Configuration;
-
-
-import dbservice.DBServiceImpl;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -59,14 +59,15 @@ public class Main {
         }
 
         final WebSocketService webSocketService = new WebSocketServiceImpl();
-        final GameMechanics gameMechanics = new GameMechanicsImpl(webSocketService);
         final UserService userService = new UserServiceImpl(dbService);
         final AccountService accountService = new AccountServiceImpl();
 
-        classContext.add(GameMechanics.class, gameMechanics);
         classContext.add(WebSocketService.class, webSocketService);
         classContext.add(UserService.class, userService);
         classContext.add(AccountService.class, accountService);
+
+        final GameMechanics gameMechanics = new GameMechanicsImpl(classContext);
+        classContext.add(GameMechanics.class, gameMechanics);
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");

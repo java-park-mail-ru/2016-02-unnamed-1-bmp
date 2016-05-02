@@ -18,7 +18,7 @@ public class GameFieldShip {
         this.length = length;
         this.isVertical = isVertical;
 
-        for(int i = 0; i < length; i++) {
+        for (int i = 0; i < length; i++) {
             this.decks.add(true);
         }
     }
@@ -48,7 +48,7 @@ public class GameFieldShip {
     }
 
     public boolean containsDeck(int x, int y) {
-        if(isVertical) {
+        if (isVertical) {
             return this.startX == x && y >= this.startY && y < this.startY + this.length;
         }
         return this.startY == y && x >= this.startX && x < this.startX + this.length;
@@ -62,14 +62,14 @@ public class GameFieldShip {
         final int maxX = minX + lengthX - 1;
         final int maxY = minY + lengthY - 1;
 
-        for(int i = 0; i < ship.length; i++) {
+        for (int i = 0; i < ship.length; i++) {
             final int curX = ship.isVertical ? ship.startX : ship.startX + i;
             final int curY = ship.isVertical ? ship.startY + i : ship.startY;
 
             final boolean betweenX = minX <= curX && maxX >= curX;
             final boolean betweenY = minY <= curY && maxY >= curY;
 
-            if(betweenX && betweenY) {
+            if (betweenX && betweenY) {
                 return true;
             }
         }
@@ -78,9 +78,9 @@ public class GameFieldShip {
     }
 
     public boolean shoot(int x, int y) throws GameFieldShipException {
-        if(this.containsDeck(x, y)) {
+        if (this.containsDeck(x, y)) {
             final int key = (this.isVertical ? y - this.startY : x - this.startX);
-            if(!this.decks.get(key)) {
+            if (!this.decks.get(key)) {
                 throw new GameFieldShipException("The deck is already shot");
             }
             this.decks.set(key, false);
@@ -102,7 +102,7 @@ public class GameFieldShip {
 
     public ArrayList<GameFieldShipDeck> getDecks() {
         final ArrayList<GameFieldShipDeck> result = new ArrayList<>();
-        for(int i = 0; i < this.length; i++) {
+        for (int i = 0; i < this.length; i++) {
             final int curX = this.isVertical ? this.startX : this.startX + i;
             final int curY = this.isVertical ? this.startY + i : this.startY;
             result.add(new GameFieldShipDeck(curX, curY));
@@ -110,35 +110,34 @@ public class GameFieldShip {
         return result;
     }
 
+    @SuppressWarnings("OverlyComplexMethod")
     public ArrayList<GameFieldShipDeck> getNearDecks(GameFieldProperties properties) {
         final ArrayList<GameFieldShipDeck> result = new ArrayList<>();
 
-        if(this.isVertical) {
-            for(int y = this.startY - 1; y <= this.startY + this.length; y++) {
-                if(y > 0 && y <= properties.getSize()) {
-                    if(this.startX > 1) {
+        if (this.isVertical) {
+            for (int y = this.startY - 1; y <= this.startY + this.length; y++) {
+                if (y > 0 && y <= properties.getSize()) {
+                    if (this.startX > 1) {
                         result.add(new GameFieldShipDeck(this.startX - 1, y));
                     }
-                    if(this.startX < properties.getSize()) {
+                    if (this.startX < properties.getSize()) {
                         result.add(new GameFieldShipDeck(this.startX + 1, y));
                     }
-                    if(y == this.startY - 1 || y == this.startY + this.length) {
+                    if (y == this.startY - 1 || y == this.startY + this.length) {
                         result.add(new GameFieldShipDeck(this.startX, y));
                     }
                 }
             }
-        }
-        else
-        {
-            for(int x = this.startX - 1; x <= this.startX + this.length; x++) {
-                if(x > 0 && x <= properties.getSize()) {
-                    if(this.startY > 1) {
+        } else {
+            for (int x = this.startX - 1; x <= this.startX + this.length; x++) {
+                if (x > 0 && x <= properties.getSize()) {
+                    if (this.startY > 1) {
                         result.add(new GameFieldShipDeck(x, this.startY - 1));
                     }
-                    if(this.startY < properties.getSize()) {
+                    if (this.startY < properties.getSize()) {
                         result.add(new GameFieldShipDeck(x, this.startY + 1));
                     }
-                    if(x == this.startX - 1 || x == this.startX + this.length) {
+                    if (x == this.startX - 1 || x == this.startX + this.length) {
                         result.add(new GameFieldShipDeck(x, this.startY));
                     }
                 }

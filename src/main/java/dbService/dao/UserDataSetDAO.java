@@ -66,8 +66,7 @@ public class UserDataSetDAO {
 
         final int currScore = user.getScore();
         session.createQuery("UPDATE UserDataSet a SET " +
-                "a.score = :scr WHERE a.id = :id")
-                .setParameter("scr", currScore)
+                "a.score = a.score + 1 WHERE a.id = :id")
                 .setParameter("id", id)
                 .executeUpdate();
     }

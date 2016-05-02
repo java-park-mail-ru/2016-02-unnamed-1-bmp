@@ -1,53 +1,257 @@
 package game;
 
 
-import base.GameUser;
+import base.WebSocketService;
+import main.Context;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class GameSession {
+
+    private static final long MAX_OFFLINE_DURATION = 5 * 60 * 1000;
+    private static final long CHECK_OFFLINE_DURATION = 6 * 60 * 1000;
+    private static final long MAX_GAME_DURATION = 30 * 60 * 1000;
+    private static final Logger LOGGER = LogManager.getLogger(GameSession.class);
+
+    private static AtomicLong latestId = new AtomicLong(1);
+
+    private static final int USERS = 2;
+    private static final int STATE_NOT_STARTED = 0;
+    private static final int STATE_STARTED = 1;
+    private static final int STATE_FINISHED = 2;
+
     private final long startTime;
-    private final GameUser first;
-    private final GameUser second;
+    private int state = STATE_NOT_STARTED;
 
-    private final Map<String, GameUser> users = new HashMap<>();
+    private final WebSocketService webSocketService;
+    private final GameMechanics gameMechanics;
 
-    public GameSession(String first, Map<String, String>  firstBoats,
-                       String second, Map<String, String> secondBoats) {
-        startTime = new Date().getTime();
-        final GameUser firstGameUser = new GameUser(first, firstBoats);
-        firstGameUser.setEnemyName(second);
+    private final GameFieldProperties gameFieldProperties;
 
-        final GameUser secondGameUser = new GameUser(second, secondBoats);
-        secondGameUser.setEnemyName(first);
+    private final ArrayList<GameUser> gameUsers = new ArrayList<>();
+    private int gameTurn = 0;
+    private final long id;
 
-        users.put(first, firstGameUser);
-        users.put(second, secondGameUser);
+    public GameSession(Context context, GameFieldProperties gameFieldProperties) {
+        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
+        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+        this.gameFieldProperties = gameFieldProperties;
+        this.id = latestId.getAndIncrement();
+        this.startTime = new Date().getTime();
 
-        this.first = firstGameUser;
-        this.second = secondGameUser;
+        LOGGER.info("Created game session, id {}", this.id);
     }
 
-    public GameUser getEnemy(String user) {
-        final String enemyName = users.get(user).getEnemyName();
-        return users.get(enemyName);
+    public boolean addUser(GameUser user) {
+        LOGGER.info("Attempting to add user to game session id {}, user {}", this.id, user.getName());
+        if (this.state == STATE_NOT_STARTED && this.gameUsers.size() < USERS) {
+            if (user.isReadyForGame() && this.gameFieldProperties.equals(user.getFieldProperties())) {
+                LOGGER.info("Added user to game session id {}, user {}", this.id, user.getName());
+                gameUsers.add(user);
+                return true;
+            }
+        }
+        return false;
     }
 
-    public long getSessionTime(){
-        return new Date().getTime() - startTime;
+    public long getId() {
+        return this.id;
     }
 
-    public GameUser getFirst() {
-        return first;
+    public GameFieldProperties getGameFieldProperties() {
+        return this.gameFieldProperties;
     }
 
-    public GameUser getSecond() {
-        return second;
+    public boolean isNotStarted() {
+        return this.state == STATE_NOT_STARTED;
     }
 
-    public GameUser getSelf(String user) {
-        return users.get(user);
+    public boolean isStarted() {
+        return this.state == STATE_STARTED;
+    }
+
+    public boolean isFinished() {
+        return this.state == STATE_FINISHED;
+    }
+
+    public void start() {
+        if (this.state == STATE_NOT_STARTED && this.gameUsers.size() == USERS) {
+            LOGGER.info("Start game session id {}", this.id);
+            this.state = STATE_STARTED;
+
+            this.gameTurn = (int) Math.round(Math.random()) % USERS;
+            this.notifyStart();
+            this.notifyOpponentOnline();
+            this.repeatTurn();
+        }
+    }
+
+    public void finish() {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Finish game session id {}", this.id);
+            this.state = STATE_FINISHED;
+            this.gameUsers.forEach(this.gameMechanics::removeUser);
+        }
+    }
+
+    @Nullable
+    public GameFieldShootResult shoot(GameUser gameUser, int x, int y, @Nullable Consumer<GameFieldShootResult> cb) {
+        if (!this.isTurnOf(gameUser) || this.state != STATE_STARTED) {
+            return null;
+        }
+
+        final GameFieldShipDeck deck = new GameFieldShipDeck(x, y);
+        if(!deck.isValidForGameFieldProperties(this.gameFieldProperties)) {
+            return null;
+        }
+
+        final GameUser opponent = this.getOpponent(gameUser);
+
+        final GameFieldShootResult result = opponent.getField().shoot(x, y);
+        LOGGER.info("Shoot in game session id {}, user {}, x {}, y {}, result {}", this.id, gameUser.getName(), x, y, result.getState());
+
+        if(cb != null) {
+            cb.accept(result);
+        }
+
+        this.webSocketService.notifyShootResult(gameUser, result, false);
+        this.webSocketService.notifyShootResult(opponent, result, true);
+
+        if (opponent.getField().isKilled()) {
+            LOGGER.info("Kill opponent {} in game session id {}", opponent.getName(), this.id);
+            this.win(gameUser);
+        } else {
+            if (result.isMiss()) {
+                this.nextTurn();
+            } else {
+                this.repeatTurn();
+            }
+        }
+
+        return result;
+    }
+
+    public void giveUp(GameUser gameUser) {
+        if (this.state != STATE_STARTED) {
+            return;
+        }
+        LOGGER.info("Give up in game session id {}, user {}", this.id, gameUser.getName());
+
+        final GameUser opponent = this.getOpponent(gameUser);
+
+        this.win(opponent);
+    }
+
+    public void win(GameUser gameUser) {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Win in game session id {}, user {}", this.id, gameUser.getName());
+            final GameUser opponent = this.getOpponent(gameUser);
+
+            gameUser.incScore();
+            this.webSocketService.notifyGameOver(gameUser, true);
+            this.webSocketService.notifyGameOver(opponent, false);
+            this.finish();
+        }
+    }
+
+    public void tooLong() {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Session is too long game session id {}", this.id);
+            this.webSocketService.notifyTooLong(this.getCurrentTurnUser());
+            this.webSocketService.notifyTooLong(this.getNextTurnUser());
+            this.webSocketService.notifyGameOver(this.getCurrentTurnUser(), false);
+            this.webSocketService.notifyGameOver(this.getNextTurnUser(), false);
+            this.finish();
+        }
+    }
+
+    public long getDuration() {
+        return new Date().getTime() - this.startTime;
+    }
+
+    public boolean isTurnOf(GameUser user) {
+        final int key = this.gameUsers.indexOf(user);
+        return key > -1 && this.gameTurn == key;
+    }
+
+    public ArrayList<GameUser> getUsers() {
+        return this.gameUsers;
+    }
+
+    public GameUser getCurrentTurnUser() {
+        return this.gameUsers.get(this.gameTurn);
+    }
+
+    public GameUser getNextTurnUser() {
+        return this.gameUsers.get((this.gameTurn + 1) % USERS);
+    }
+
+    public void nextTurn() {
+        this.gameTurn = (this.gameTurn + 1) % USERS;
+        this.repeatTurn();
+    }
+
+    public void repeatTurn() {
+        LOGGER.info("Turn in game session id {}, user {}", this.id, this.getCurrentTurnUser().getName());
+
+        this.notifyTurn();
+
+        if(this.getCurrentTurnUser().isBot() && this.getCurrentTurnUser().getBotHelper() != null) {
+            this.getCurrentTurnUser().getBotHelper().shoot();
+        }
+    }
+
+    public void checkOffline() {
+        if (this.state == STATE_STARTED && this.getDuration() > CHECK_OFFLINE_DURATION) {
+            if (this.getCurrentTurnUser().getOfflineDuration() > MAX_OFFLINE_DURATION) {
+                LOGGER.info("Offline in game session id {}, user {}", this.id, this.getCurrentTurnUser().getName());
+                this.win(this.getNextTurnUser());
+            } else if (this.getNextTurnUser().getOfflineDuration() > MAX_OFFLINE_DURATION) {
+                LOGGER.info("Offline in game session id {}, user {}", this.id, this.getNextTurnUser().getName());
+                this.win(this.getCurrentTurnUser());
+            }
+        }
+    }
+
+    public void checkTooLong() {
+        if (this.state == STATE_STARTED && this.getDuration() > MAX_GAME_DURATION) {
+            this.tooLong();
+        }
+    }
+
+    public GameUser getOpponent(GameUser user) {
+        final int key = this.gameUsers.indexOf(user);
+        return this.gameUsers.get((key + 1) % USERS);
+    }
+
+    public void notifyStart() {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Notify start in game session id {}", this.id);
+            this.webSocketService.notifyStartGame(this.getCurrentTurnUser(), this.getNextTurnUser());
+            this.webSocketService.notifyStartGame(this.getNextTurnUser(), this.getCurrentTurnUser());
+        }
+    }
+
+    public void notifyTurn() {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Notify turn in game session id {}", this.id);
+            this.webSocketService.notifyTurn(this.getCurrentTurnUser(), true);
+            this.webSocketService.notifyTurn(this.getNextTurnUser(), false);
+        }
+    }
+
+    public void notifyOpponentOnline() {
+        if (this.state == STATE_STARTED) {
+            LOGGER.info("Notify online in game session id {}", this.id);
+            this.webSocketService.notifyOpponentOnline(this.getCurrentTurnUser(), this.getNextTurnUser());
+            this.webSocketService.notifyOpponentOnline(this.getNextTurnUser(), this.getCurrentTurnUser());
+        }
     }
 }

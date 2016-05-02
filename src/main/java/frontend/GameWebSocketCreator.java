@@ -10,9 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-
-import java.util.Random;
-
+import org.jetbrains.annotations.Nullable;
 
 public class GameWebSocketCreator implements WebSocketCreator {
     final Context context;
@@ -27,6 +25,7 @@ public class GameWebSocketCreator implements WebSocketCreator {
     }
 
     @Override
+    @Nullable
     public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
         final String sessionId = req.getHttpServletRequest().getSession().getId();
 
@@ -40,12 +39,10 @@ public class GameWebSocketCreator implements WebSocketCreator {
         try {
             userData = userService.getUserById(userId);
         } catch (DatabaseException e) {
-            LOGGER.error("Can't find info about user with id#{}", userId);
+            LOGGER.error("Can't find info about user (for creating socket) with id {}", userId);
             return null;
         }
-
-        LOGGER.info("Socket created for {}", userData.getLogin());
-        return new GameWebSocket(userData.getLogin(), context, userData.getId());
+        return new GameWebSocket(userData, context);
     }
 }
 

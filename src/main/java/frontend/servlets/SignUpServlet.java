@@ -1,6 +1,7 @@
 package frontend.servlets;
 
 import base.AccountService;
+import base.AnimalPlayer;
 import base.UserService;
 import com.google.gson.*;
 
@@ -10,46 +11,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Random;
 
 import dbservice.DatabaseException;
 import main.Context;
 import base.datasets.UserDataSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 public class SignUpServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);
     private final AccountService accountService;
     private final UserService userService;
-
-    public enum AnimalPlayer {
-        CAMEL,
-        CHUPACABRA,
-        GIRAFFE,
-        MONKEY,
-        GRIZZLY,
-        CHAMELEON,
-        ELEPHANT,
-        HYENA,
-        FROG,
-        SHEEP,
-        TURTLE,
-        IGUANA,
-        LEMUR,
-        HIPPO,
-        COYOTE,
-        WOLF,
-        PANDA,
-        PYTHON;
-
-        private static final int SIZE = AnimalPlayer.values().length;
-        private static final Random RANDOM = new Random();
-
-        public static AnimalPlayer randomAnimal() {
-            return AnimalPlayer.values()[RANDOM.nextInt(SIZE)];
-        }
-    }
 
     public SignUpServlet(Context context) {
         this.userService = (UserService) context.get(UserService.class);
@@ -57,7 +30,7 @@ public class SignUpServlet extends HttpServlet {
     }
 
     private void doPostAnonymous(JsonElement message, HttpServletRequest request,
-                                HttpServletResponse response) throws ServletException, IOException {
+                                HttpServletResponse response) throws IOException {
         final JsonObject responseBody = new JsonObject();
 
         LOGGER.info("Incoming message: {}", message.toString());
@@ -70,7 +43,7 @@ public class SignUpServlet extends HttpServlet {
         final String login = message.getAsJsonObject().get("login").getAsString().trim();
         final long newUserId;
         try {
-            final String realLogin = login.isEmpty() ? "Anonymous " + AnimalPlayer.randomAnimal().toString().toLowerCase() : login;
+            final String realLogin = login.isEmpty() ? "Anonymous " + AnimalPlayer.randomAnimal() : login;
             newUserId = userService.saveUser(new UserDataSet(realLogin));
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUserId);
@@ -216,6 +189,7 @@ public class SignUpServlet extends HttpServlet {
         response.getWriter().println(responseBody);
     }
 
+    @Nullable
     public UserDataSet checkRequest(HttpServletRequest request) throws DatabaseException {
         if (request.getPathInfo() == null)
             return null;

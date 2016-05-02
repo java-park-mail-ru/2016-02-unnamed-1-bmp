@@ -1,5 +1,7 @@
 package game;
 
+import org.jetbrains.annotations.NotNull;
+
 public class GameFieldShipDeck {
 
     private int deckX;
@@ -16,6 +18,13 @@ public class GameFieldShipDeck {
 
     public int getY() {
         return this.deckY;
+    }
+
+    public boolean isValidForGameFieldProperties(@NotNull GameFieldProperties properties) {
+        boolean isValid = this.deckX > 0 && this.deckX <= properties.getSize();
+        isValid = isValid && this.deckY > 0 && this.deckY <= properties.getSize();
+
+        return isValid;
     }
 
     @Override

@@ -7,7 +7,7 @@ public class GameFieldShootResult {
         STATE_ALREADY,
         STATE_WOUND,
         STATE_KILLED
-    };
+    }
 
     private GameFieldShootState state;
     private GameFieldShip ship;
