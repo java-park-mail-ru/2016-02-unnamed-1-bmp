@@ -17,11 +17,10 @@ public class UserDataSetDAO {
     }
 
     public Long save(UserDataSet dataSet) {
-        Long id = (Long) session.save(dataSet);
-        return id;
+        return (Long) session.save(dataSet);
     }
 
-    public UserDataSet readById (long id) {
+    public UserDataSet readById(long id) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         return (UserDataSet) criteria
                 .add(Restrictions.eq("id", id))
@@ -58,13 +57,7 @@ public class UserDataSetDAO {
 
     @SuppressWarnings("JpaQlInspection")
     public void incrementScore(long id) {
-        final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet user =  (UserDataSet) criteria
-                .add(Restrictions.eq("id", id))
-                .add(Restrictions.eq("isDeleted", false))
-                .uniqueResult();
 
-        final int currScore = user.getScore();
         session.createQuery("UPDATE UserDataSet a SET " +
                 "a.score = a.score + 1 WHERE a.id = :id")
                 .setParameter("id", id)
@@ -82,7 +75,7 @@ public class UserDataSetDAO {
 
     public boolean checkUniqueLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+        final UserDataSet userExist = (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("login", login))
                 .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
@@ -91,7 +84,7 @@ public class UserDataSetDAO {
 
     public boolean checkUniqueEmail(String email) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+        final UserDataSet userExist = (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("email", email))
                 .uniqueResult();
         return userExist == null;

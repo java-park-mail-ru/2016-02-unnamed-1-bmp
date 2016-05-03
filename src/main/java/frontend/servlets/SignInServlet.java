@@ -126,7 +126,7 @@ public class SignInServlet extends HttpServlet {
     }
 
     private void goOut(HttpServletResponse response, JsonObject responseBody,
-                       int status, String error ) {
+                       int status, String error) {
         response.setStatus(status);
         responseBody.add("error", new JsonPrimitive(error));
         LOGGER.debug(error);

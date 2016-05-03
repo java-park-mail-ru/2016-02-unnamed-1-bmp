@@ -1,12 +1,11 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class GameField {
-    private GameFieldProperties gameFieldProperties;
-    private ArrayList<GameFieldShip> ships = new ArrayList<>();
-    private ArrayList<GameFieldShootResult> shoots = new ArrayList<>();
+    private final GameFieldProperties gameFieldProperties;
+    private final ArrayList<GameFieldShip> ships = new ArrayList<>();
+    private final ArrayList<GameFieldShootResult> shoots = new ArrayList<>();
 
     public GameField(GameFieldProperties gameFieldProperties) {
         this.gameFieldProperties = gameFieldProperties;
@@ -34,10 +33,6 @@ public class GameField {
 
     public long countShips(int length) {
         return this.ships.stream().filter((ship) -> ship.getLength() == length).count();
-    }
-
-    public int countShips() {
-        return this.ships.size();
     }
 
     public GameFieldShootResult shoot(int x, int y) {
@@ -86,25 +81,25 @@ public class GameField {
 
         final GameField field = new GameField(gameFieldProperties);
         final ArrayList<GameFieldShipDeck> busyCells = new ArrayList<>();
-        for(int decks = maxDeck; decks > 0; decks--) {
+        for (int decks = maxDeck; decks > 0; decks--) {
             final int maxShips = gameFieldProperties.getShips(decks);
-            for(int ships = 0; ships < maxShips; ships++) {
-                while(true) {
+            for (int ships = 0; ships < maxShips; ships++) {
+                while (true) {
                     final int x = (int) Math.floor(Math.random() * size) + 1;
                     final int y = (int) Math.floor(Math.random() * size) + 1;
 
-                    if(busyCells.contains(new GameFieldShipDeck(x, y))) {
+                    if (busyCells.contains(new GameFieldShipDeck(x, y))) {
                         continue;
                     }
                     final boolean vertical = Math.random() > 0.49;
 
                     GameFieldShip ship;
-                    if(field.addShip(ship = new GameFieldShip(x, y, decks, vertical))) {
+                    if (field.addShip(ship = new GameFieldShip(x, y, decks, vertical))) {
                         ship.getDecks().forEach(busyCells::add);
                         ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
                         break;
                     }
-                    if(field.addShip(ship = new GameFieldShip(x, y, decks, !vertical))) {
+                    if (field.addShip(ship = new GameFieldShip(x, y, decks, !vertical))) {
                         ship.getDecks().forEach(busyCells::add);
                         ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
                         break;

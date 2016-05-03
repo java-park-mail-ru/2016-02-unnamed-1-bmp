@@ -1,10 +1,10 @@
 package frontend.servlets;
 
-import base.UserService;
 import base.datasets.UserDataSet;
 import dbservice.DatabaseException;
 import frontend.FrontendTest;
 import org.hamcrest.core.StringContains;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 
-public class SignUpServletTest extends FrontendTest{
+public class SignUpServletTest extends FrontendTest {
 
     @Test
     public void testDoPost() throws IOException, ServletException, DatabaseException {

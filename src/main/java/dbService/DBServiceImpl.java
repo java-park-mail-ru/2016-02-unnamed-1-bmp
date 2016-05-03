@@ -37,26 +37,26 @@ public class DBServiceImpl implements DBService {
 
     @Override
     @Nullable
-    public <T>T doReturningWork(@NotNull HibernateUnit<T> work) throws DatabaseException {
-        try( Session session = sessionFactory.openSession()) {
+    public <T> T doReturningWork(@NotNull HibernateUnit<T> work) throws DatabaseException {
+        try (Session session = sessionFactory.openSession()) {
             session.getTransaction().begin();
             final T result = work.operate(session);
             session.getTransaction().commit();
             return result;
         } catch (HibernateException e) {
-            throw new DatabaseException("Fail to perform a transaction",e);
+            throw new DatabaseException("Fail to perform a transaction", e);
         }
     }
 
     @Override
     @Nullable
     public void doWork(@NotNull HibernateUnitVoid work) throws DatabaseException {
-        try( Session session = sessionFactory.openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             session.getTransaction().begin();
             work.operate(session);
             session.getTransaction().commit();
         } catch (HibernateException e) {
-            throw new DatabaseException("Fail to perform a transaction",e);
+            throw new DatabaseException("Fail to perform a transaction", e);
         }
     }
 

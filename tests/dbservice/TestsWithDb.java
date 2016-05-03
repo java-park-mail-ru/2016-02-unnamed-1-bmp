@@ -24,7 +24,7 @@ public class TestsWithDb {
     @SuppressWarnings("JpaQlInspection")
     @After
     public void cleanUp() throws DatabaseException {
-        dbService.doWork((session)->session.createQuery("DELETE from UserDataSet").executeUpdate());
+        dbService.doWork((session) -> session.createQuery("DELETE from UserDataSet").executeUpdate());
     }
 
     @AfterClass

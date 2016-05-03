@@ -27,7 +27,7 @@ public class ScoreboardServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException{
+                      HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
         final List<UserDataSet> topTen;
         try {
@@ -36,7 +36,7 @@ public class ScoreboardServlet extends HttpServlet {
             LOGGER.error(e);
             return;
         }
-        for(UserDataSet user: topTen) {
+        for (UserDataSet user : topTen) {
             responseBody.add(user.getLogin(), new JsonPrimitive(user.getScore()));
         }
         response.getWriter().println(responseBody);

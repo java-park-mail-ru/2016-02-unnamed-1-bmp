@@ -34,7 +34,7 @@ public class UserServiceImplTest extends TestsWithDb {
         } catch (DatabaseException e) {
             assertNotNull(e);
         }
-        assertEquals(userService.getUserByEmail("admin@admin.com").getId(),userDataSet.getId());
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId(), userDataSet.getId());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class UserServiceImplTest extends TestsWithDb {
         } catch (DatabaseException e) {
             assertNotNull(e);
         }
-        assertEquals(userService.getUserByEmail("admin@admin.com").getId(),userDataSet.getId());
+        assertEquals(userService.getUserByEmail("admin@admin.com").getId(), userDataSet.getId());
     }
 
 

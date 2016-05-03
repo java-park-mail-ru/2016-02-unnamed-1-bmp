@@ -6,11 +6,11 @@ import java.util.*;
 
 public class GameFieldShip {
 
-    private int startX;
-    private int startY;
-    private int length;
-    private boolean isVertical;
-    private ArrayList<Boolean> decks = new ArrayList<>();
+    private final int startX;
+    private final int startY;
+    private final int length;
+    private final boolean isVertical;
+    private final ArrayList<Boolean> decks = new ArrayList<>();
 
     public GameFieldShip(int x, int y, int length, boolean isVertical) {
         this.startX = x;
@@ -41,10 +41,6 @@ public class GameFieldShip {
 
     public boolean isKilled() {
         return !this.decks.contains(true);
-    }
-
-    public boolean isFull() {
-        return !this.decks.contains(false);
     }
 
     public boolean containsDeck(int x, int y) {

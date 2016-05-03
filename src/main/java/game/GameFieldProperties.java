@@ -10,7 +10,7 @@ import java.util.Properties;
 
 public final class GameFieldProperties {
 
-    private static HashMap<String, GameFieldProperties> loaded = new HashMap<>();
+    private static final HashMap<String, GameFieldProperties> loaded = new HashMap<>();
     private Properties gameData = null;
 
     private GameFieldProperties(Properties gameData) {
@@ -28,15 +28,6 @@ public final class GameFieldProperties {
     public int getShips(int decks) {
         final String count = this.gameData.getProperty("ship" + String.valueOf(decks));
         return count == null ? 0 : Integer.valueOf(count);
-    }
-
-    public int getDecks() {
-        final int maxShipDecks = this.getMaxDeck();
-        int res = 0;
-        for (int i = 1; i <= maxShipDecks; i++) {
-            res += i * this.getShips(i);
-        }
-        return res;
     }
 
     @Nullable

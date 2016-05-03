@@ -172,8 +172,9 @@ public class GameMechanicsImpl implements GameMechanics {
                 this.gameSessions.remove(gameSession.getId(), gameSession);
                 this.usersToSessions.remove(userId, gameSession);
             }
+            return true;
         }
-        return true;
+        return false;
     }
 
     @SuppressWarnings("InfiniteLoopStatement")

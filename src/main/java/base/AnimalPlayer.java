@@ -26,7 +26,6 @@ public enum AnimalPlayer {
     private static final Random RANDOM = new Random();
 
     public static String randomAnimal() {
-        final String name = "Anonymous " + AnimalPlayer.values()[RANDOM.nextInt(SIZE)].toString().toLowerCase();
-        return name;
+        return "Anonymous " + AnimalPlayer.values()[RANDOM.nextInt(SIZE)].toString().toLowerCase();
     }
 }

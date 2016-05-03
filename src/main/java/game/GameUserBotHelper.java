@@ -4,7 +4,7 @@ import java.util.*;
 
 public class GameUserBotHelper {
 
-    private GameUser gameUser;
+    private final GameUser gameUser;
     private final GameSession gameSession;
 
     private final HashMap<GameFieldShipDeck, GameFieldShootResult> shoots = new HashMap<>();

@@ -4,8 +4,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class GameFieldShipDeck {
 
-    private int deckX;
-    private int deckY;
+    private final int deckX;
+    private final int deckY;
 
     public GameFieldShipDeck(int x, int y) {
         this.deckX = x;

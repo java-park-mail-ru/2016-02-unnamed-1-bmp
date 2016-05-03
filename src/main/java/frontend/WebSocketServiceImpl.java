@@ -17,7 +17,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void addSocket(@NotNull GameWebSocket socket) {
         final Long userId = socket.getUser().getId();
         final GameWebSocket previous = this.sockets.get(userId);
-        if(previous != null && previous.isOpen()) {
+        if (previous != null && previous.isOpen()) {
             previous.close();
         }
         this.sockets.put(userId, socket);
@@ -26,8 +26,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void removeSocket(@NotNull GameWebSocket socket) {
         final Long userId = socket.getUser().getId();
-        if(this.sockets.remove(userId, socket)) {
-            if(socket.isOpen()) {
+        if (this.sockets.remove(userId, socket)) {
+            if (socket.isOpen()) {
                 socket.close();
             }
         }
@@ -35,9 +35,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void removeSocketByUser(@NotNull GameUser gameUser) {
-        if(gameUser.getUser() != null) {
+        if (gameUser.getUser() != null) {
             final GameWebSocket socket = this.sockets.get(gameUser.getUser().getId());
-            if(this.sockets.remove(gameUser.getUser().getId(), socket)) {
+            if (this.sockets.remove(gameUser.getUser().getId(), socket)) {
                 socket.close();
             }
         }
@@ -45,7 +45,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public boolean isOnline(@NotNull GameUser gameUser) {
-        if(gameUser.getUser() != null) {
+        if (gameUser.getUser() != null) {
             final long userId = gameUser.getUser().getId();
             final GameWebSocket socket = this.sockets.get(userId);
 
@@ -57,10 +57,10 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void notify(@NotNull GameUser gameUser, GameWebSocketMessage message) {
-        if(gameUser.getUser() != null) {
+        if (gameUser.getUser() != null) {
             final Long userId = gameUser.getUser().getId();
             final GameWebSocket gameWebSocket = this.sockets.get(userId);
-            if(gameWebSocket != null) {
+            if (gameWebSocket != null) {
                 gameWebSocket.send(message);
             }
         }
@@ -70,7 +70,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void notifyInitGame(@NotNull GameUser gameUser, boolean ok, @Nullable Long gameSessionId) {
         final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_INIT);
         notifyMessage.setOk(ok);
-        if(gameSessionId != null) {
+        if (gameSessionId != null) {
             notifyMessage.setId(gameSessionId);
         }
         this.notify(gameUser, notifyMessage);
@@ -104,7 +104,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         shootMessage.setY(result.getY());
         shootMessage.setStatus(result.getState().toString());
 
-        if(result.isKilled()) {
+        if (result.isKilled()) {
             shootMessage.setStartX(result.getShip().getX());
             shootMessage.setStartY(result.getShip().getY());
             shootMessage.setLength(result.getShip().getLength());

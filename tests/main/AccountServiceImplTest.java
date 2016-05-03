@@ -15,7 +15,7 @@ public class AccountServiceImplTest {
         final AccountService accountService = new AccountServiceImpl();
 
         accountService.addSessions("admin", USER_ID);
-        assertEquals(USER_ID , accountService.getUserIdBySesssion("admin").longValue());
+        assertEquals(USER_ID, accountService.getUserIdBySesssion("admin").longValue());
     }
 
     @Test
@@ -23,9 +23,9 @@ public class AccountServiceImplTest {
         final AccountService accountService = new AccountServiceImpl();
 
         accountService.addSessions("admin", USER_ID);
-        accountService.addSessions("admin", USER_ID+1);
+        accountService.addSessions("admin", USER_ID + 1);
 
-        assertEquals(USER_ID , accountService.getUserIdBySesssion("admin").longValue());
+        assertEquals(USER_ID, accountService.getUserIdBySesssion("admin").longValue());
     }
 
 

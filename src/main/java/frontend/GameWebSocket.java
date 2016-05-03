@@ -23,7 +23,7 @@ public class GameWebSocket {
 
     private Session session;
 
-    private UserDataSet user;
+    private final UserDataSet user;
     private final WebSocketService webSocketService;
     private final GameMechanics gameMechanics;
     private final UserService userService;
@@ -192,7 +192,7 @@ public class GameWebSocket {
         final String gameMode = message.getAsJsonPrimitive("mode").getAsString();
         final GameFieldProperties gameFieldProperties = GameFieldProperties.getProperties();
 
-        if(gameFieldProperties == null) {
+        if (gameFieldProperties == null) {
             this.send(new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, "Unexpected error"));
             return;
         }

@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.InputStreamReader;
+
 import org.apache.commons.io.IOUtils;
 
 import static org.mockito.Mockito.*;
@@ -34,7 +35,7 @@ public class SignInServletTest extends FrontendTest {
 
         signInServlet.doGet(request, response);
 
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"id\":1}"));
+        assertThat(stringWriter.toString(), StringContains.containsString("{\"id\":1}"));
         verify(response).setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -50,7 +51,7 @@ public class SignInServletTest extends FrontendTest {
         final SignInServlet signInServlet = new SignInServlet(context);
 
         signInServlet.doGet(request, response);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"User not authorized\""));
+        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"User not authorized\""));
         verify(response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
@@ -76,7 +77,7 @@ public class SignInServletTest extends FrontendTest {
         final String str = "{\"id\":" + newUser.getId();
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
-        assertThat(stringWriter.toString(),StringContains.containsString(str));
+        assertThat(stringWriter.toString(), StringContains.containsString(str));
     }
 
     @Test
@@ -129,7 +130,7 @@ public class SignInServletTest extends FrontendTest {
         signInServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Can't parse JSON\"}"));
+        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Can't parse JSON\"}"));
     }
 
     @Test
@@ -145,7 +146,7 @@ public class SignInServletTest extends FrontendTest {
         signInServlet.doDelete(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_OK);
-        assertThat(stringWriter.toString(),StringContains.containsString("{}"));
+        assertThat(stringWriter.toString(), StringContains.containsString("{}"));
     }
 
     @Test
@@ -161,6 +162,6 @@ public class SignInServletTest extends FrontendTest {
         signInServlet.doDelete(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        assertThat(stringWriter.toString(),StringContains.containsString("{\"error\":\"Fail to delete user session\"}"));
+        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Fail to delete user session\"}"));
     }
 }

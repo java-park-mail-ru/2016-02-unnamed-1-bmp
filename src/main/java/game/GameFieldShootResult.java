@@ -9,17 +9,10 @@ public class GameFieldShootResult {
         STATE_KILLED
     }
 
-    private GameFieldShootState state;
-    private GameFieldShip ship;
-    private int shootX;
-    private int shootY;
-
-    GameFieldShootResult(int x, int y) {
-        this.shootX = x;
-        this.shootY = y;
-        this.state = GameFieldShootState.STATE_MISS;
-        this.ship = null;
-    }
+    private final GameFieldShootState state;
+    private final GameFieldShip ship;
+    private final int shootX;
+    private final int shootY;
 
     GameFieldShootResult(int x, int y, GameFieldShootState state) {
         this.shootX = x;

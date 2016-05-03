@@ -18,7 +18,7 @@ public class GameWebSocketMessage {
     }
 
     private boolean ok;
-    private MessageType type;
+    private final MessageType type;
     private String error;
 
     private Long id = null;
@@ -46,16 +46,8 @@ public class GameWebSocketMessage {
         this.error = error;
     }
 
-    public void setOk() {
-        this.ok = true;
-    }
-
     public void setOk(boolean ok) {
         this.ok = ok;
-    }
-
-    public void setNotOk() {
-        this.ok = false;
     }
 
     public void setError(String error) {
@@ -111,35 +103,35 @@ public class GameWebSocketMessage {
             obj.add("id", new JsonPrimitive(this.id));
         }
 
-        if(this.opponentName != null) {
+        if (this.opponentName != null) {
             obj.add("opponentName", new JsonPrimitive(this.opponentName));
         }
 
-        if(this.status != null) {
+        if (this.status != null) {
             obj.add("status", new JsonPrimitive(this.status.toLowerCase().replace("state_", "")));
         }
 
-        if(this.xVar != null) {
+        if (this.xVar != null) {
             obj.add("x", new JsonPrimitive(this.xVar));
         }
 
-        if(this.yVar != null) {
+        if (this.yVar != null) {
             obj.add("y", new JsonPrimitive(this.yVar));
         }
 
-        if(this.xStart != null) {
+        if (this.xStart != null) {
             obj.add("startX", new JsonPrimitive(this.xStart));
         }
 
-        if(this.yStart != null) {
+        if (this.yStart != null) {
             obj.add("startY", new JsonPrimitive(this.yStart));
         }
 
-        if(this.length != null) {
+        if (this.length != null) {
             obj.add("length", new JsonPrimitive(this.length));
         }
 
-        if(this.isVertical != null) {
+        if (this.isVertical != null) {
             obj.add("isVertical", new JsonPrimitive(this.isVertical));
         }
         return obj;

@@ -30,7 +30,7 @@ public class SignUpServlet extends HttpServlet {
     }
 
     private void doPostAnonymous(JsonElement message, HttpServletRequest request,
-                                HttpServletResponse response) throws IOException {
+                                 HttpServletResponse response) throws IOException {
         final JsonObject responseBody = new JsonObject();
 
         LOGGER.info("Incoming message: {}", message.toString());
@@ -60,6 +60,7 @@ public class SignUpServlet extends HttpServlet {
     }
 
     @Override
+    @SuppressWarnings("OverlyComplexMethod")
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
         final JsonObject responseBody = new JsonObject();
@@ -83,7 +84,7 @@ public class SignUpServlet extends HttpServlet {
         LOGGER.info("Incoming message: {}", message.toString());
 
         final JsonElement isAnonymous = message.getAsJsonObject().get("isAnonymous");
-        if(isAnonymous != null && isAnonymous.getAsBoolean()) {
+        if (isAnonymous != null && isAnonymous.getAsBoolean()) {
             this.doPostAnonymous(message, request, response);
             return;
         }
@@ -170,7 +171,7 @@ public class SignUpServlet extends HttpServlet {
 
         try {
             final UserDataSet currUser = checkRequest(request);
-            if (currUser == null || !userService.deleteUserById(currUser.getId()) ) {
+            if (currUser == null || !userService.deleteUserById(currUser.getId())) {
                 goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "User doesn\'t exist");
                 response.getWriter().println(responseBody);
                 return;

@@ -1,6 +1,5 @@
 package base;
 
-import com.google.gson.JsonObject;
 import com.sun.istack.internal.NotNull;
 import frontend.GameWebSocket;
 import frontend.GameWebSocketMessage;

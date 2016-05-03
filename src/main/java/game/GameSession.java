@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class GameSession {
 
@@ -20,7 +19,7 @@ public class GameSession {
     private static final long MAX_GAME_DURATION = 30 * 60 * 1000;
     private static final Logger LOGGER = LogManager.getLogger(GameSession.class);
 
-    private static AtomicLong latestId = new AtomicLong(1);
+    private static final AtomicLong latestId = new AtomicLong(1);
 
     private static final int USERS = 2;
     private static final int STATE_NOT_STARTED = 0;
@@ -101,15 +100,14 @@ public class GameSession {
         }
     }
 
-    @Nullable
-    public GameFieldShootResult shoot(GameUser gameUser, int x, int y, @Nullable Consumer<GameFieldShootResult> cb) {
+    public void shoot(GameUser gameUser, int x, int y, @Nullable Consumer<GameFieldShootResult> cb) {
         if (!this.isTurnOf(gameUser) || this.state != STATE_STARTED) {
-            return null;
+            return;
         }
 
         final GameFieldShipDeck deck = new GameFieldShipDeck(x, y);
-        if(!deck.isValidForGameFieldProperties(this.gameFieldProperties)) {
-            return null;
+        if (!deck.isValidForGameFieldProperties(this.gameFieldProperties)) {
+            return;
         }
 
         final GameUser opponent = this.getOpponent(gameUser);
@@ -117,7 +115,7 @@ public class GameSession {
         final GameFieldShootResult result = opponent.getField().shoot(x, y);
         LOGGER.info("Shoot in game session id {}, user {}, x {}, y {}, result {}", this.id, gameUser.getName(), x, y, result.getState());
 
-        if(cb != null) {
+        if (cb != null) {
             cb.accept(result);
         }
 
@@ -134,8 +132,6 @@ public class GameSession {
                 this.repeatTurn();
             }
         }
-
-        return result;
     }
 
     public void giveUp(GameUser gameUser) {
@@ -181,10 +177,6 @@ public class GameSession {
         return key > -1 && this.gameTurn == key;
     }
 
-    public ArrayList<GameUser> getUsers() {
-        return this.gameUsers;
-    }
-
     public GameUser getCurrentTurnUser() {
         return this.gameUsers.get(this.gameTurn);
     }
@@ -203,7 +195,7 @@ public class GameSession {
 
         this.notifyTurn();
 
-        if(this.getCurrentTurnUser().isBot() && this.getCurrentTurnUser().getBotHelper() != null) {
+        if (this.getCurrentTurnUser().isBot() && this.getCurrentTurnUser().getBotHelper() != null) {
             this.getCurrentTurnUser().getBotHelper().shoot();
         }
     }
