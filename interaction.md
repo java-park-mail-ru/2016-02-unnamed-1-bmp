@@ -116,11 +116,13 @@
 ```
 {
   "ok": true,
-  "type": "game_turn"
+  "type": "game_turn",
+  "score": 100
 }
 ```
 
 `ok` - `true` = победа, `false` = поражение
+`score` - количество побед (рекорд игрока)
 
 
 ### shoot_result / Результат выстрела

@@ -76,6 +76,14 @@ public class GameUser {
         }
     }
 
+    public int getScore() {
+        if (this.user != null) {
+            return this.user.getScore();
+        }
+
+        return 0;
+    }
+
     public boolean isReadyForGame() {
         return this.field.isValid();
     }

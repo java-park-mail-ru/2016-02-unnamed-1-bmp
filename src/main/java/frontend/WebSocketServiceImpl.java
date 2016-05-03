@@ -117,6 +117,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void notifyGameOver(@NotNull GameUser gameUser, boolean win) {
         final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_OVER);
         notifyMessage.setOk(win);
+        notifyMessage.setScore(gameUser.getScore());
         this.notify(gameUser, notifyMessage);
     }
 

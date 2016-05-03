@@ -34,6 +34,8 @@ public class GameWebSocketMessage {
     private Integer length = null;
     private Boolean isVertical = null;
 
+    private Integer score = null;
+
     public GameWebSocketMessage(MessageType type) {
         this.ok = true;
         this.type = type;
@@ -90,6 +92,10 @@ public class GameWebSocketMessage {
         this.isVertical = isVertical;
     }
 
+    public void setScore(int score) {
+        this.score = score;
+    }
+
     @SuppressWarnings("OverlyComplexMethod")
     public JsonObject getAsJSON() {
         final JsonObject obj = new JsonObject();
@@ -133,6 +139,10 @@ public class GameWebSocketMessage {
 
         if (this.isVertical != null) {
             obj.add("isVertical", new JsonPrimitive(this.isVertical));
+        }
+
+        if (this.score != null) {
+            obj.add("score", new JsonPrimitive(this.score));
         }
         return obj;
     }
