@@ -35,15 +35,13 @@ public class SignUpServlet extends HttpServlet {
 
         LOGGER.info("Incoming message: {}", message.toString());
         if (message.getAsJsonObject().get("login") == null) {
-            goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");
-            response.getWriter().println(responseBody);
-            return;
+            message.getAsJsonObject().add("login", new JsonPrimitive(""));
         }
 
         final String login = message.getAsJsonObject().get("login").getAsString().trim();
         final long newUserId;
         try {
-            final String realLogin = login.isEmpty() ? "Anonymous " + AnimalPlayer.randomAnimal() : login;
+            final String realLogin = login.isEmpty() ? AnimalPlayer.randomAnimal() : login;
             newUserId = userService.saveUser(new UserDataSet(realLogin));
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUserId);
