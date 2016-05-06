@@ -61,6 +61,7 @@ public class SignUpServlet extends HttpServlet {
     @SuppressWarnings("OverlyComplexMethod")
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
@@ -101,13 +102,13 @@ public class SignUpServlet extends HttpServlet {
         try {
             if (!userService.isEmailUnique(email)) {
                 goOutFieldError(response, responseBody, HttpServletResponse.SC_FORBIDDEN,
-                        "Email already exist", "email");
+                        "Данный email уже зарегистрирован", "email");
                 response.getWriter().println(responseBody);
                 return;
             }
             if (!userService.isLoginUnique(login)) {
                 goOutFieldError(response, responseBody, HttpServletResponse.SC_BAD_REQUEST,
-                        "Login already exist", "login");
+                        "Данный логин уже зарегистрирован", "login");
                 response.getWriter().println(responseBody);
                 return;
             }
@@ -130,6 +131,7 @@ public class SignUpServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final UserDataSet currUser;
         try {

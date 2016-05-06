@@ -50,6 +50,7 @@ public class SignInServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
@@ -93,7 +94,7 @@ public class SignInServlet extends HttpServlet {
 
         if (user == null || !Objects.equals(user.getPassword(), password)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("Wrong login or password"));
+            responseBody.add("error", new JsonPrimitive("Неправильный логин и пароль"));
             responseBody.add("field", new JsonPrimitive("password"));
             LOGGER.debug("Wrong login or password");
             response.getWriter().println(responseBody);
