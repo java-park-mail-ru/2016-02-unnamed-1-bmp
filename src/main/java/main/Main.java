@@ -75,20 +75,11 @@ public class Main {
         context.addServlet(new ServletHolder(new WebSocketGameServlet(classContext)), "/gameplay");
         LOGGER.info("Created servlets");
 
-        final ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(true);
-        resourceHandler.setResourceBase("dist");
-
-        final HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{resourceHandler, context});
-
         final Server server = new Server();
         final ServerConnector http = new ServerConnector(server);
         http.setHost(host);
         http.setPort(port);
-
         server.addConnector(http);
-        server.setHandler(handlers);
 
         server.start();
         gameMechanics.run();
