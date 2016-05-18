@@ -21,23 +21,23 @@ public class GameWebSocketCreator implements WebSocketCreator {
 
     public enum AnimalPlayer {
         CAMEL,
-        CHUPACABRA,
-        GIRAFFE,
-        MONKEY,
-        GRIZZLY,
         CHAMELEON,
+        CHUPACABRA,
+        COYOTE,
         ELEPHANT,
-        HYENA,
         FROG,
-        SHEEP,
-        TURTLE,
+        GIRAFFE,
+        GRIZZLY,
+        HIPPO,
+        HYENA,
         IGUANA,
         LEMUR,
-        HIPPO,
-        COYOTE,
-        WOLF,
+        MONKEY,
         PANDA,
-        PYTHON;
+        PYTHON,
+        SHEEP,
+        TURTLE,
+        WOLF;
 
         private static final int SIZE = AnimalPlayer.values().length;
         private static final Random RANDOM = new Random();
