@@ -1,13 +1,14 @@
 package base;
 
 import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import frontend.GameWebSocket;
 import frontend.GameWebSocketMessage;
 import game.GameFieldShootResult;
 import game.GameUser;
-import org.jetbrains.annotations.Nullable;
+import messagesystem.Abonent;
 
-public interface WebSocketService {
+public interface WebSocketService extends Abonent, Runnable {
 
     void addSocket(GameWebSocket socket);
 

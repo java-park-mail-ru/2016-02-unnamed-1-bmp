@@ -1,25 +1,28 @@
 package game;
 
-
-import base.WebSocketService;
+import com.sun.istack.internal.Nullable;
+import frontend.messages.*;
+import game.messages.MessageRemoveUser;
 import main.Context;
+import messagesystem.Abonent;
+import messagesystem.Address;
+import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-public class GameSession {
+public class GameSession implements Abonent {
 
     private static final long MAX_OFFLINE_DURATION = 5 * 60 * 1000;
     private static final long CHECK_OFFLINE_DURATION = 6 * 60 * 1000;
     private static final long MAX_GAME_DURATION = 30 * 60 * 1000;
     private static final Logger LOGGER = LogManager.getLogger(GameSession.class);
 
-    private static final AtomicLong latestId = new AtomicLong(1);
+    private static final AtomicLong LATEST_ID = new AtomicLong(1);
 
     private static final int USERS = 2;
     private static final int STATE_NOT_STARTED = 0;
@@ -29,8 +32,8 @@ public class GameSession {
     private final long startTime;
     private int state = STATE_NOT_STARTED;
 
-    private final WebSocketService webSocketService;
-    private final GameMechanics gameMechanics;
+//    private final WebSocketService webSocketService;
+//    private final GameMechanics gameMechanics;
 
     private final GameFieldProperties gameFieldProperties;
 
@@ -38,11 +41,17 @@ public class GameSession {
     private int gameTurn = 0;
     private final long id;
 
+    private final Address address = new Address();
+    private MessageSystem messageSystem;
+
+
     public GameSession(Context context, GameFieldProperties gameFieldProperties) {
-        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
-        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+//        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
+//        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+        this.messageSystem = (MessageSystem) context.get(MessageSystem.class);
+
         this.gameFieldProperties = gameFieldProperties;
-        this.id = latestId.getAndIncrement();
+        this.id = LATEST_ID.getAndIncrement();
         this.startTime = new Date().getTime();
 
         LOGGER.info("Created game session, id {}", this.id);
@@ -96,7 +105,12 @@ public class GameSession {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Finish game session id {}", this.id);
             this.state = STATE_FINISHED;
-            this.gameUsers.forEach(this.gameMechanics::removeUser);
+//            this.gameUsers.forEach(this.gameMechanics::removeUser);
+            this.gameUsers.forEach(messageSystem.sendMessage(new MessageRemoveUser(this.address,
+                    messageSystem.getAddressService().getGameMechanicsAddressFor(),
+                    gameUser, result, false));)
+
+            
         }
     }
 
@@ -119,8 +133,15 @@ public class GameSession {
             cb.accept(result);
         }
 
-        this.webSocketService.notifyShootResult(gameUser, result, false);
-        this.webSocketService.notifyShootResult(opponent, result, true);
+//        this.webSocketService.notifyShootResult(gameUser, result, false);
+//        this.webSocketService.notifyShootResult(opponent, result, true);
+
+        messageSystem.sendMessage(new MessageNotifyShootResult(this.address,
+                messageSystem.getAddressService().getWebSocketServiceAddress(),
+                gameUser, result, false));
+        messageSystem.sendMessage(new MessageNotifyShootResult(this.address,
+                messageSystem.getAddressService().getWebSocketServiceAddress(),
+                opponent, result, true));
 
         if (opponent.getField().isKilled()) {
             LOGGER.info("Kill opponent {} in game session id {}", opponent.getName(), this.id);
@@ -151,8 +172,15 @@ public class GameSession {
             final GameUser opponent = this.getOpponent(gameUser);
 
             gameUser.incScore();
-            this.webSocketService.notifyGameOver(gameUser, true);
-            this.webSocketService.notifyGameOver(opponent, false);
+//            this.webSocketService.notifyGameOver(gameUser, true);
+//            this.webSocketService.notifyGameOver(opponent, false);
+
+            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    gameUser, true));
+            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    opponent, false));
             this.finish();
         }
     }
@@ -160,10 +188,24 @@ public class GameSession {
     public void tooLong() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Session is too long game session id {}", this.id);
-            this.webSocketService.notifyTooLong(this.getCurrentTurnUser());
-            this.webSocketService.notifyTooLong(this.getNextTurnUser());
-            this.webSocketService.notifyGameOver(this.getCurrentTurnUser(), false);
-            this.webSocketService.notifyGameOver(this.getNextTurnUser(), false);
+//            this.webSocketService.notifyTooLong(this.getCurrentTurnUser());
+//            this.webSocketService.notifyTooLong(this.getNextTurnUser());
+            messageSystem.sendMessage(new MessageNotifyTooLong(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getCurrentTurnUser()));
+            messageSystem.sendMessage(new MessageNotifyTooLong(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getNextTurnUser()));
+
+//            this.webSocketService.notifyGameOver(this.getCurrentTurnUser(), false);
+//            this.webSocketService.notifyGameOver(this.getNextTurnUser(), false);
+            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getCurrentTurnUser(), false));
+            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getNextTurnUser(), false));
+
             this.finish();
         }
     }
@@ -226,24 +268,48 @@ public class GameSession {
     public void notifyStart() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify start in game session id {}", this.id);
-            this.webSocketService.notifyStartGame(this.getCurrentTurnUser(), this.getNextTurnUser());
-            this.webSocketService.notifyStartGame(this.getNextTurnUser(), this.getCurrentTurnUser());
+//            this.webSocketService.notifyStartGame(this.getCurrentTurnUser(), this.getNextTurnUser());
+//            this.webSocketService.notifyStartGame(this.getNextTurnUser(), this.getCurrentTurnUser());
+
+            messageSystem.sendMessage(new MessageNotifyStart(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getCurrentTurnUser(), this.getNextTurnUser()));
+            messageSystem.sendMessage(new MessageNotifyStart(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getNextTurnUser(), this.getCurrentTurnUser()));
         }
     }
 
     public void notifyTurn() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify turn in game session id {}", this.id);
-            this.webSocketService.notifyTurn(this.getCurrentTurnUser(), true);
-            this.webSocketService.notifyTurn(this.getNextTurnUser(), false);
+//            this.webSocketService.notifyTurn(this.getCurrentTurnUser(), true);
+//            this.webSocketService.notifyTurn(this.getNextTurnUser(), false);
+            messageSystem.sendMessage(new MessageNotifyTurn(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getCurrentTurnUser(), true));
+            messageSystem.sendMessage(new MessageNotifyTurn(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getNextTurnUser(), false));
         }
     }
 
     public void notifyOpponentOnline() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify online in game session id {}", this.id);
-            this.webSocketService.notifyOpponentOnline(this.getCurrentTurnUser(), this.getNextTurnUser());
-            this.webSocketService.notifyOpponentOnline(this.getNextTurnUser(), this.getCurrentTurnUser());
+//            this.webSocketService.notifyOpponentOnline(this.getCurrentTurnUser(), this.getNextTurnUser());
+//            this.webSocketService.notifyOpponentOnline(this.getNextTurnUser(), this.getCurrentTurnUser());
+            messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getCurrentTurnUser(), this.getNextTurnUser()));
+            messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    this.getNextTurnUser(), this.getCurrentTurnUser()));
         }
+    }
+
+    @Override
+    public Address getAddress() {
+        return address;
     }
 }

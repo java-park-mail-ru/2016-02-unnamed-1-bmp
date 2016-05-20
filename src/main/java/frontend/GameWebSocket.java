@@ -4,8 +4,15 @@ package frontend;
 import base.*;
 import base.datasets.UserDataSet;
 import com.google.gson.*;
+import com.sun.istack.internal.NotNull;
+import frontend.messages.MessageAddSocket;
+import frontend.messages.MessageOpponentOnline;
+import frontend.messages.MessageRemoveSocket;
 import game.*;
 import main.Context;
+import messagesystem.Abonent;
+import messagesystem.Address;
+import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.api.Session;
@@ -13,19 +20,19 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 
 @WebSocket
-public class GameWebSocket {
-
+public class GameWebSocket implements Abonent{
+    private Address address = new Address();
+    private MessageSystem messageSystem;
     private Session session;
 
     private final UserDataSet user;
-    private final WebSocketService webSocketService;
-    private final GameMechanics gameMechanics;
+//    private final WebSocketService webSocketService;
+//    private final GameMechanics gameMechanics;
     private final UserService userService;
 
     private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
@@ -33,8 +40,9 @@ public class GameWebSocket {
     GameWebSocket(@NotNull UserDataSet user, Context context) {
         this.user = user;
 
-        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
-        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+//        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
+//        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
+        this.messageSystem = (MessageSystem) context.get(MessageSystem.class);
         this.userService = (UserService) context.get(UserService.class);
     }
 
@@ -46,7 +54,9 @@ public class GameWebSocket {
     public void onOpen(Session ses) {
         this.session = ses;
         LOGGER.info("Opened web socket, user id {}", this.user.getId());
-        this.webSocketService.addSocket(this);
+//        this.webSocketService.addSocket(this);
+        messageSystem.sendMessage(new MessageAddSocket(this.address,
+                messageSystem.getAddressService().getWebSocketServiceAddress(), this));
 
         final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
         final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
@@ -55,7 +65,11 @@ public class GameWebSocket {
             gameUser.setOnline();
             final GameUser opponent = gameSession.getOpponent(gameUser);
             if (opponent != null) {
-                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
+//                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
+                messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                        messageSystem.getAddressService().getWebSocketServiceAddress(),
+                        opponent, gameUser));
+
             }
         }
     }
@@ -63,7 +77,9 @@ public class GameWebSocket {
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
         LOGGER.info("Closed web socket, user id {}", this.user.getId());
-        this.webSocketService.removeSocket(this);
+//        this.webSocketService.removeSocket(this);
+        messageSystem.sendMessage(new MessageRemoveSocket(this.address,
+                messageSystem.getAddressService().getWebSocketServiceAddress(), this));
 
         final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
         final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
@@ -72,7 +88,10 @@ public class GameWebSocket {
             gameUser.setOffline();
             final GameUser opponent = gameSession.getOpponent(gameUser);
             if (opponent != null) {
-                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
+//                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
+                messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                        messageSystem.getAddressService().getWebSocketServiceAddress(),
+                        opponent, gameUser));
             }
         }
     }
@@ -256,7 +275,8 @@ public class GameWebSocket {
 
     public boolean send(String message) {
         try {
-            LOGGER.info("Attempting to send a message in web socket, user id {}, message: \"{}\"", this.user.getId(), message);
+            LOGGER.info("Attempting to send a message in web socket, user id {}, message: \"{}\"",
+                    this.user.getId(), message);
             this.session.getRemote().sendString(message);
             return true;
         } catch (IOException e) {
@@ -280,5 +300,10 @@ public class GameWebSocket {
 
     public boolean isOpen() {
         return this.session.isOpen();
+    }
+
+    @Override
+    public Address getAddress() {
+        return address;
     }
 }

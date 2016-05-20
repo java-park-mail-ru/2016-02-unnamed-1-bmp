@@ -12,6 +12,7 @@ import frontend.servlets.SignInServlet;
 import frontend.servlets.SignUpServlet;
 import frontend.servlets.WebSocketGameServlet;
 import game.*;
+import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Handler;
@@ -58,16 +59,19 @@ public class Main {
             return;
         }
 
-        final WebSocketService webSocketService = new WebSocketServiceImpl();
+//        final WebSocketService webSocketService = new WebSocketServiceImpl();
+//        final GameMechanics gameMechanics = new GameMechanicsImpl(classContext);
         final UserService userService = new UserServiceImpl(dbService);
         final AccountService accountService = new AccountServiceImpl();
 
-        classContext.add(WebSocketService.class, webSocketService);
+//        classContext.add(WebSocketService.class, webSocketService);
+//        classContext.add(GameMechanics.class, gameMechanics);
         classContext.add(UserService.class, userService);
         classContext.add(AccountService.class, accountService);
 
-        final GameMechanics gameMechanics = new GameMechanicsImpl(classContext);
-        classContext.add(GameMechanics.class, gameMechanics);
+
+        final MessageSystem messageSystem = new MessageSystem();
+        classContext.add(MessageSystem.class, messageSystem);
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
@@ -92,6 +96,6 @@ public class Main {
         server.setHandler(handlers);
 
         server.start();
-        gameMechanics.run();
+//        gameMechanics.run();
     }
 }

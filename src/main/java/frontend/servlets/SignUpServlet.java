@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
 import main.Context;
 import base.datasets.UserDataSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 public class SignUpServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(SignUpServlet.class);

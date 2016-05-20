@@ -2,9 +2,9 @@ package game;
 
 import base.UserService;
 import base.datasets.UserDataSet;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 

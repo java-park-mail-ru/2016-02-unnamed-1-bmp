@@ -3,6 +3,7 @@ package frontend;
 import base.AccountService;
 import base.UserService;
 import base.datasets.UserDataSet;
+import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
 import main.Context;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.jetbrains.annotations.Nullable;
 
 public class GameWebSocketCreator implements WebSocketCreator {
     final Context context;

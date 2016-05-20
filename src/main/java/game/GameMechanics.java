@@ -2,9 +2,10 @@ package game;
 
 
 import base.datasets.UserDataSet;
-import org.jetbrains.annotations.Nullable;
+import com.sun.istack.internal.Nullable;
+import messagesystem.Abonent;
 
-public interface GameMechanics {
+public interface GameMechanics extends Abonent, Runnable {
 
     GameSession getUserGameSession(UserDataSet user);
 

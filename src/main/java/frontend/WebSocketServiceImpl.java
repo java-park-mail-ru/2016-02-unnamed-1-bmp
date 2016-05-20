@@ -2,16 +2,26 @@ package frontend;
 
 import base.WebSocketService;
 import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import game.GameFieldShootResult;
 import game.GameUser;
-import org.jetbrains.annotations.Nullable;
+import main.Context;
+import messagesystem.Address;
+import messagesystem.MessageSystem;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 public class WebSocketServiceImpl implements WebSocketService {
+    private static final long STEP_TIME = 200;
     private final ConcurrentMap<Long, GameWebSocket> sockets = new ConcurrentHashMap<>();
+    private final Address address = new Address();
+    private MessageSystem messageSystem;
+
+    public WebSocketServiceImpl(Context context) {
+        messageSystem = (MessageSystem) context.get(MessageSystem.class);
+    }
 
     @Override
     public void addSocket(@NotNull GameWebSocket socket) {
@@ -67,8 +77,10 @@ public class WebSocketServiceImpl implements WebSocketService {
     }
 
     @Override
-    public void notifyInitGame(@NotNull GameUser gameUser, boolean ok, @Nullable Long gameSessionId) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_INIT);
+    public void notifyInitGame(@NotNull GameUser gameUser, boolean ok,
+                               @Nullable Long gameSessionId) {
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_INIT);
         notifyMessage.setOk(ok);
         if (gameSessionId != null) {
             notifyMessage.setId(gameSessionId);
@@ -78,27 +90,33 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void notifyError(@NotNull GameUser gameUser, String error) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, error);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, error);
         this.notify(gameUser, notifyMessage);
     }
 
     @Override
     public void notifyTurn(@NotNull GameUser gameUser, boolean isHis) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_TURN);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_TURN);
         notifyMessage.setOk(isHis);
         this.notify(gameUser, notifyMessage);
     }
 
     @Override
     public void notifyStartGame(@NotNull GameUser gameUser, @NotNull GameUser opponent) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_START);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_START);
         notifyMessage.setOpponentName(opponent.getName());
         this.notify(gameUser, notifyMessage);
     }
 
     @Override
-    public void notifyShootResult(@NotNull GameUser gameUser, @NotNull GameFieldShootResult result, boolean isMine) {
-        final GameWebSocketMessage shootMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.SHOOT_RESULT);
+    public void notifyShootResult(@NotNull GameUser gameUser, @NotNull GameFieldShootResult result,
+                                  boolean isMine) {
+
+        final GameWebSocketMessage shootMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.SHOOT_RESULT);
         shootMessage.setOk(isMine);
         shootMessage.setX(result.getX());
         shootMessage.setY(result.getY());
@@ -115,7 +133,8 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void notifyGameOver(@NotNull GameUser gameUser, boolean win) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_OVER);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_OVER);
         notifyMessage.setOk(win);
         notifyMessage.setScore(gameUser.getScore());
         this.notify(gameUser, notifyMessage);
@@ -123,15 +142,34 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Override
     public void notifyOpponentOnline(@NotNull GameUser gameUser, @NotNull GameUser opponent) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.OPPONENT_ONLINE);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.OPPONENT_ONLINE);
         notifyMessage.setOk(this.isOnline(opponent));
         this.notify(gameUser, notifyMessage);
     }
 
     @Override
     public void notifyTooLong(@NotNull GameUser gameUser) {
-        final GameWebSocketMessage notifyMessage = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_TOO_LONG);
+        final GameWebSocketMessage notifyMessage =
+                new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_TOO_LONG);
         this.notify(gameUser, notifyMessage);
     }
 
+    @Override
+    public Address getAddress() {
+        return address;
+    }
+
+    @SuppressWarnings("InfiniteLoopStatement")
+    @Override
+    public void run() {
+        while (true) {
+            messageSystem.execForAbonent(this);
+            try {
+                Thread.sleep(STEP_TIME);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package game;
 
-import org.jetbrains.annotations.Nullable;
-
+import com.sun.istack.internal.Nullable;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,7 +9,7 @@ import java.util.Properties;
 
 public final class GameFieldProperties {
 
-    private static final HashMap<String, GameFieldProperties> loaded = new HashMap<>();
+    private static final HashMap<String, GameFieldProperties> LOADED = new HashMap<>();
     private Properties gameData = null;
 
     private GameFieldProperties(Properties gameData) {
@@ -32,15 +31,15 @@ public final class GameFieldProperties {
 
     @Nullable
     public static GameFieldProperties getProperties(String gameMode) {
-        if (loaded.containsKey(gameMode)) {
-            return loaded.get(gameMode);
+        if (LOADED.containsKey(gameMode)) {
+            return LOADED.get(gameMode);
         }
 
         try (final FileInputStream fileData = new FileInputStream("setups/game/" + gameMode + ".properties")) {
             final Properties gameData = new Properties();
             gameData.load(fileData);
             final GameFieldProperties gameObject = new GameFieldProperties(gameData);
-            loaded.put(gameMode, gameObject);
+            LOADED.put(gameMode, gameObject);
             return gameObject;
         } catch (FileNotFoundException e) {
             return null;
