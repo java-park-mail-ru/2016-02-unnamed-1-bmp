@@ -17,16 +17,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveUser(UserDataSet dataSet) throws DatabaseException {
-        dbService.doWork((session)-> {
+    public Long saveUser(UserDataSet dataSet) throws DatabaseException {
+        return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
-            dao.save(dataSet);
+            return dao.save(dataSet);
         });
     }
 
     @Override
     public void incrementUserScore(long id) throws DatabaseException {
-        dbService.doWork((session)-> {
+        dbService.doWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             dao.incrementScore(id);
         });
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUserById(Long id) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
+        return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             return dao.markAsDeletedById(id);
         });
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDataSet> getTop() throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
+        return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             return dao.getTopTen();
         });
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isEmailUnique(String email) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
+        return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             return dao.checkUniqueEmail(email);
         });
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean isLoginUnique(String login) throws DatabaseException {
-        return dbService.doReturningWork((session)-> {
+        return dbService.doReturningWork((session) -> {
             final UserDataSetDAO dao = new UserDataSetDAO(session);
             return dao.checkUniqueLogin(login);
         });

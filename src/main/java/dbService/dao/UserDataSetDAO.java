@@ -16,11 +16,11 @@ public class UserDataSetDAO {
         this.session = session;
     }
 
-    public void save(UserDataSet dataSet) {
-        session.save(dataSet);
+    public Long save(UserDataSet dataSet) {
+        return (Long) session.save(dataSet);
     }
 
-    public UserDataSet readById (long id) {
+    public UserDataSet readById(long id) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
         return (UserDataSet) criteria
                 .add(Restrictions.eq("id", id))
@@ -33,6 +33,7 @@ public class UserDataSetDAO {
         return (UserDataSet) criteria
                 .add(Restrictions.eq("email", email))
                 .add(Restrictions.eq("isDeleted", false))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
     }
 
@@ -50,21 +51,15 @@ public class UserDataSetDAO {
         return (UserDataSet) criteria
                 .add(Restrictions.eq("login", login))
                 .add(Restrictions.eq("isDeleted", false))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
     }
 
     @SuppressWarnings("JpaQlInspection")
     public void incrementScore(long id) {
-        final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet user =  (UserDataSet) criteria
-                .add(Restrictions.eq("id", id))
-                .add(Restrictions.eq("isDeleted", false))
-                .uniqueResult();
 
-        final int currScore = user.getScore();
         session.createQuery("UPDATE UserDataSet a SET " +
-                "a.score = :scr WHERE a.id = :id")
-                .setParameter("scr", currScore)
+                "a.score = a.score + 1 WHERE a.id = :id")
                 .setParameter("id", id)
                 .executeUpdate();
     }
@@ -80,15 +75,16 @@ public class UserDataSetDAO {
 
     public boolean checkUniqueLogin(String login) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+        final UserDataSet userExist = (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("login", login))
+                .add(Restrictions.eq("isAnonymous", false))
                 .uniqueResult();
         return userExist == null;
     }
 
     public boolean checkUniqueEmail(String email) {
         final Criteria criteria = session.createCriteria(UserDataSet.class);
-        final UserDataSet userExist =  (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
+        final UserDataSet userExist = (UserDataSet) criteria.setLockMode(LockMode.PESSIMISTIC_WRITE)
                 .add(Restrictions.eq("email", email))
                 .uniqueResult();
         return userExist == null;

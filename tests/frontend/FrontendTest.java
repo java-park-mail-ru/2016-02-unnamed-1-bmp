@@ -20,11 +20,11 @@ import static org.mockito.Mockito.when;
 
 public class FrontendTest {
     @NotNull
-    public static UserService userService;
+    protected static UserService userService;
     @NotNull
-    public static AccountService accountService;
+    protected static AccountService accountService;
     @NotNull
-    public static Context context;
+    protected static Context context;
 
 
     @BeforeClass
@@ -32,7 +32,7 @@ public class FrontendTest {
         accountService = mock(AccountServiceImpl.class);
         userService = mock(UserServiceImpl.class);
 
-        context  = new Context();
+        context = new Context();
         context.add(AccountService.class, accountService);
         context.add(UserService.class, userService);
     }
