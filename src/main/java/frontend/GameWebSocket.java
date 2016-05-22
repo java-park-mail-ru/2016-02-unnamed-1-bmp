@@ -82,7 +82,7 @@ public class GameWebSocket implements Abonent {
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        LOGGER.info("Closed web socket, user id {}", this.user.getId());
+        LOGGER.info("Closed web socket, user id {} by {}", this.user.getId(), reason);
 //        this.webSocketService.removeSocket(this);
         messageSystem.sendMessage(new MessageRemoveSocket(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
@@ -155,7 +155,7 @@ public class GameWebSocket implements Abonent {
 //        final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
         if (gameSession == null) {
             result.setOk(false);
-            this.send(result);
+            this.send(result.getAsJSON());
             return;
         }
         result.setId(gameSession.getId());
