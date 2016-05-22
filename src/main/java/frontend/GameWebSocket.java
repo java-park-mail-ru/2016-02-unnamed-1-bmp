@@ -35,7 +35,7 @@ public class GameWebSocket implements Abonent {
     private Session session;
     private final UserDataSet user;
     private final Context context;
-//    private final WebSocketService webSocketService;
+    //    private final WebSocketService webSocketService;
 //    private final GameMechanics gameMechanics;
     private final UserService userService;
     private GameSession gameSession;
@@ -312,7 +312,9 @@ public class GameWebSocket implements Abonent {
 
     public void close() {
         LOGGER.info("Attempting to close web socket, user id {}", this.user.getId());
-        this.session.close();
+        if (session.isOpen()) {
+            this.session.close();
+        }
     }
 
     public boolean isOpen() {
@@ -324,3 +326,4 @@ public class GameWebSocket implements Abonent {
         return address;
     }
 }
+
