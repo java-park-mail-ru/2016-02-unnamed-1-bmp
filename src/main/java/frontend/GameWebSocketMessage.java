@@ -5,35 +5,18 @@ import com.google.gson.JsonPrimitive;
 
 public class GameWebSocketMessage {
 
-    public enum MessageType {
-        GAME_INIT,
-        GAME_START,
-        GAME_TURN,
-        GAME_OVER,
-        SHOOT_RESULT,
-        ERROR,
-        GAME_STATUS,
-        OPPONENT_ONLINE,
-        GAME_TOO_LONG
-    }
-
-    private boolean ok;
     private final MessageType type;
+    private boolean ok;
     private String error;
-
     private Long id = null;
     private String opponentName = null;
-
     private String status = null;
-
     private Integer xVar = null;
     private Integer yVar = null;
-
     private Integer xStart = null;
     private Integer yStart = null;
     private Integer length = null;
     private Boolean isVertical = null;
-
     private Integer score = null;
 
     public GameWebSocketMessage(MessageType type) {
@@ -150,5 +133,17 @@ public class GameWebSocketMessage {
     @Override
     public String toString() {
         return this.getAsJSON().toString();
+    }
+
+    public enum MessageType {
+        GAME_INIT,
+        GAME_START,
+        GAME_TURN,
+        GAME_OVER,
+        SHOOT_RESULT,
+        ERROR,
+        GAME_STATUS,
+        OPPONENT_ONLINE,
+        GAME_TOO_LONG
     }
 }

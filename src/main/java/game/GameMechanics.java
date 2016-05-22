@@ -13,13 +13,14 @@ public interface GameMechanics extends Abonent, Runnable {
 
     GameUser getGameUser(UserDataSet user);
 
-    boolean addUserForRandomGame(GameUser gameUser, GameSession gameSession);
+    void addUserForRandomGame(GameUser gameUser, GameSession gameSession);
 
-    boolean addUserForBotGame(GameUser gameUser, GameSession gameSession);
+    void addUserForBotGame(GameUser gameUser, GameSession gameSession);
 
-    boolean addUserForFriendGame(GameUser gameUser, @Nullable Long gameSessionId);
+    void addUserForFriendGame(GameUser gameUser, @Nullable Long gameSessionId);
 
-    boolean removeUser(GameUser gameUser);
+    void removeUser(GameUser gameUser);
 
+    @Override
     void run();
 }

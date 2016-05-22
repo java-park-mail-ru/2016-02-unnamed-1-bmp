@@ -6,7 +6,7 @@ public final class Address {
     private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
     private final int id;
 
-    public Address(){
+    public Address() {
         id = ID_GENERATOR.getAndIncrement();
     }
 

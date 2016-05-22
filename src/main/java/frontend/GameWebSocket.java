@@ -1,6 +1,5 @@
 package frontend;
 
-
 import base.*;
 import base.datasets.UserDataSet;
 import com.google.gson.*;
@@ -27,27 +26,21 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import java.io.IOException;
 
-
 @WebSocket
 public class GameWebSocket implements Abonent {
-    private Address address = new Address();
-    private MessageSystem messageSystem;
-    private Session session;
+    private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
+    private final Address address = new Address();
+    private final MessageSystem messageSystem;
     private final UserDataSet user;
     private final Context context;
-    //    private final WebSocketService webSocketService;
-//    private final GameMechanics gameMechanics;
     private final UserService userService;
+    private Session session;
     private GameSession gameSession;
     private GameUser gameUser;
-
-    private static final Logger LOGGER = LogManager.getLogger(GameWebSocket.class);
 
     GameWebSocket(@NotNull UserDataSet user, Context context) {
         this.user = user;
         this.context = context;
-//        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
-//        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
         this.messageSystem = (MessageSystem) context.get(MessageSystem.class);
         this.userService = (UserService) context.get(UserService.class);
     }
@@ -56,22 +49,18 @@ public class GameWebSocket implements Abonent {
         return this.user;
     }
 
+    @SuppressWarnings("unused")
     @OnWebSocketConnect
     public void onOpen(Session ses) {
         this.session = ses;
         LOGGER.info("Opened web socket, user id {}", this.user.getId());
-//        this.webSocketService.addSocket(this);
         messageSystem.sendMessage(new MessageAddSocket(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
-
-//        final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
-//        final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
 
         if (gameUser != null && gameSession != null) {
             gameUser.setOnline();
             final GameUser opponent = gameSession.getOpponent(gameUser);
             if (opponent != null) {
-//                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
                 messageSystem.sendMessage(new MessageOpponentOnline(this.address,
                         messageSystem.getAddressService().getWebSocketServiceAddress(),
                         opponent, gameUser));
@@ -80,21 +69,20 @@ public class GameWebSocket implements Abonent {
         }
     }
 
+    @SuppressWarnings({"unused", "UnusedParameters"})
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        LOGGER.info("Closed web socket, user id {} by {}", this.user.getId(), reason);
-//        this.webSocketService.removeSocket(this);
+        LOGGER.info("Closed web socket, user id {}", this.user.getId());
         messageSystem.sendMessage(new MessageRemoveSocket(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
-
-//        final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
-//        final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
-
         if (gameUser != null && gameSession != null) {
             gameUser.setOffline();
+            messageSystem.sendMessage(new MessageRemoveUser(this.address,
+                    messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
+                    gameUser));
+
             final GameUser opponent = gameSession.getOpponent(gameUser);
             if (opponent != null) {
-//                this.webSocketService.notifyOpponentOnline(opponent, gameUser);
                 messageSystem.sendMessage(new MessageOpponentOnline(this.address,
                         messageSystem.getAddressService().getWebSocketServiceAddress(),
                         opponent, gameUser));
@@ -102,6 +90,7 @@ public class GameWebSocket implements Abonent {
         }
     }
 
+    @SuppressWarnings("unused")
     @OnWebSocketMessage
     public void onMessage(String data) {
         LOGGER.info("Message in socket, user id {}: \"{}\"", this.user.getId(), data);
@@ -118,13 +107,13 @@ public class GameWebSocket implements Abonent {
 
             switch (action) {
                 case "getGameStatus":
-                    this.onMessageGetGameStatus(message);
+                    this.onMessageGetGameStatus();
                     break;
                 case "initNewGame":
                     this.onMessageInitNewGame(message);
                     break;
                 case "giveUp":
-                    this.onMessageGiveUp(message);
+                    this.onMessageGiveUp();
                     break;
                 case "shoot":
                     this.onMessageShoot(message);
@@ -141,48 +130,20 @@ public class GameWebSocket implements Abonent {
         }
     }
 
-    public void onMessageGetGameStatus(JsonObject message) {
+    public void onMessageGetGameStatus() {
         final GameWebSocketMessage result = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_STATUS);
 
-//        final boolean hasGame = this.gameMechanics.hasUserGameSession(this.user);
-//        result.setOk(hasGame);
-//
-//        if (!hasGame) {
-//            this.send(result);
-//            return;
-//        }
-//        final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
-//        final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
         if (gameSession == null) {
             result.setOk(false);
             this.send(result.getAsJSON());
             return;
         }
         result.setId(gameSession.getId());
-
         final JsonObject resultJson = result.getAsJSON();
         resultJson.add("started", new JsonPrimitive(gameSession.isStarted()));
-
-        final JsonArray shipsJson = new JsonArray();
-        gameUser.getField().getShips().forEach(ship -> {
-            final JsonArray shipJson = new JsonArray();
-            shipJson.add(ship.getX());
-            shipJson.add(ship.getY());
-            shipJson.add(ship.getLength());
-            shipJson.add(ship.isVertical());
-            shipsJson.add(shipJson);
-        });
-
+        final JsonArray shipsJson = collectShips(gameUser);
         resultJson.add("ships", shipsJson);
-
-        final JsonArray shootsJson = new JsonArray();
-        gameUser.getField().getShoots().forEach(shoot -> {
-            final JsonArray shootJson = new JsonArray();
-            shootJson.add(shoot.getX());
-            shootJson.add(shoot.getY());
-            shootJson.add(!shoot.isMiss());
-            shootsJson.add(shootJson);
-        });
+        final JsonArray shootsJson = collectShoots(gameUser);
         resultJson.add("shoots", shootsJson);
 
         if (gameSession.isStarted()) {
@@ -191,30 +152,39 @@ public class GameWebSocket implements Abonent {
                 gameSession.notifyOpponentOnline();
                 final String opponentName = opponent.getName();
                 resultJson.add("opponentName", new JsonPrimitive(opponentName));
-                final JsonArray opponentShipsJson = new JsonArray();
-                opponent.getField().getShips().stream().filter(GameFieldShip::isKilled).forEach(ship -> {
-                    final JsonArray shipJson = new JsonArray();
-                    shipJson.add(ship.getX());
-                    shipJson.add(ship.getY());
-                    shipJson.add(ship.getLength());
-                    shipJson.add(ship.isVertical());
-                    opponentShipsJson.add(shipJson);
-                });
+                final JsonArray opponentShipsJson = collectShips(opponent);
                 resultJson.add("opponentShips", opponentShipsJson);
-
-                final JsonArray opponentShootsJson = new JsonArray();
-                opponent.getField().getShoots().forEach(shoot -> {
-                    final JsonArray shootJson = new JsonArray();
-                    shootJson.add(shoot.getX());
-                    shootJson.add(shoot.getY());
-                    shootJson.add(!shoot.isMiss());
-                    opponentShootsJson.add(shootJson);
-                });
+                final JsonArray opponentShootsJson = collectShoots(opponent);
                 resultJson.add("opponentShoots", opponentShootsJson);
             }
         }
 
         this.send(resultJson);
+    }
+
+    private JsonArray collectShips(GameUser gameuser) {
+        final JsonArray shipsJson = new JsonArray();
+        gameuser.getField().getShips().stream().filter(GameFieldShip::isKilled).forEach(ship -> {
+            final JsonArray shipJson = new JsonArray();
+            shipJson.add(ship.getX());
+            shipJson.add(ship.getY());
+            shipJson.add(ship.getLength());
+            shipJson.add(ship.isVertical());
+            shipJson.add(shipJson);
+        });
+        return shipsJson;
+    }
+
+    private JsonArray collectShoots(GameUser gameuser) {
+        final JsonArray shootsJson = new JsonArray();
+        gameuser.getField().getShoots().forEach(shoot -> {
+            final JsonArray shootJson = new JsonArray();
+            shootJson.add(shoot.getX());
+            shootJson.add(shoot.getY());
+            shootJson.add(!shoot.isMiss());
+            shootsJson.add(shootJson);
+        });
+        return shootsJson;
     }
 
     public void onMessageInitNewGame(JsonObject message) {
@@ -249,7 +219,6 @@ public class GameWebSocket implements Abonent {
 
         switch (gameMode) {
             case "bot":
-//                this.gameMechanics.addUserForBotGame(gameUser, gameSession);
                 messageSystem.sendMessage(new MessageAddUserForBotGame(this.address,
                         messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
                         gameUser, gameSession));
@@ -257,14 +226,12 @@ public class GameWebSocket implements Abonent {
             case "friend":
                 final JsonElement gameSessionIdElement = message.getAsJsonPrimitive("id");
                 final Long gameSessionId = gameSessionIdElement == null ? null : gameSessionIdElement.getAsLong();
-//                this.gameMechanics.addUserForFriendGame(gameUser, gameSessionId);
                 messageSystem.sendMessage(new MessageAddUserForFriendGame(this.address,
                         messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
                         gameUser, gameSessionId));
                 break;
             case "random":
             default:
-//                this.gameMechanics.addUserForRandomGame(gameUser);
                 messageSystem.sendMessage(new MessageAddUserForRandomGame(this.address,
                         messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
                         gameUser, gameSession));
@@ -272,10 +239,8 @@ public class GameWebSocket implements Abonent {
         }
     }
 
-    public void onMessageGiveUp(JsonObject message) {
-//        final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
+    public void onMessageGiveUp() {
         if (gameSession != null && gameUser != null) {
-//            final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
             gameSession.giveUp(gameUser);
         }
     }
@@ -283,31 +248,27 @@ public class GameWebSocket implements Abonent {
     public void onMessageShoot(JsonObject message) {
         final int x = message.getAsJsonPrimitive("x").getAsInt();
         final int y = message.getAsJsonPrimitive("y").getAsInt();
-//        final GameSession gameSession = this.gameMechanics.getUserGameSession(this.user);
         if (gameSession != null && gameUser != null) {
-//            final GameUser gameUser = this.gameMechanics.getGameUser(this.user);
             gameSession.shoot(gameUser, x, y, null);
         }
     }
 
-    public boolean send(String message) {
+    public void send(String message) {
         try {
             LOGGER.info("Attempting to send a message in web socket, user id {}, message: \"{}\"",
                     this.user.getId(), message);
             this.session.getRemote().sendString(message);
-            return true;
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
-            return false;
         }
     }
 
-    public boolean send(JsonObject message) {
-        return this.send(message.toString());
+    public void send(JsonObject message) {
+        this.send(message.toString());
     }
 
-    public boolean send(GameWebSocketMessage message) {
-        return this.send(message.toString());
+    public void send(GameWebSocketMessage message) {
+        this.send(message.toString());
     }
 
     public void close() {

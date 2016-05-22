@@ -5,8 +5,8 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageNotifyGameOver extends MessageToWebSocketService {
-    private GameUser gameUser;
-    private boolean win;
+    private final GameUser gameUser;
+    private final boolean win;
 
     public MessageNotifyGameOver(Address from, Address to,
                                  GameUser gameUser, boolean win) {

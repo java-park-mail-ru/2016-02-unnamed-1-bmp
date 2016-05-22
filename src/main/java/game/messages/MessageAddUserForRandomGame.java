@@ -6,8 +6,8 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageAddUserForRandomGame extends MessageToMechanics {
-    private GameUser gameUser;
-    private GameSession gameSession;
+    private final GameUser gameUser;
+    private final GameSession gameSession;
 
     public MessageAddUserForRandomGame(Address from, Address to, GameUser gameUser, GameSession gameSession) {
         super(from, to);

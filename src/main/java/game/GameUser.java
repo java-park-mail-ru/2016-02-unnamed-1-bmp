@@ -5,21 +5,21 @@ import base.datasets.UserDataSet;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Date;
 
 public class GameUser {
-
+    private static final Logger LOGGER = LogManager.getLogger(GameUser.class);
     private final String name;
     private final UserDataSet user;
 
     private final UserService userService;
 
     private final boolean isBot;
-    private GameUserBotHelper botHelper;
-
     private final GameField field;
-
+    private GameUserBotHelper botHelper;
     private Long offlineTime = null;
 
     public GameUser(String name, GameField field) {
@@ -56,23 +56,22 @@ public class GameUser {
         return this.user;
     }
 
-    public void setBotHelper(@NotNull GameUserBotHelper botHelper) {
-        this.botHelper = botHelper;
-    }
-
     @Nullable
     public GameUserBotHelper getBotHelper() {
         return this.botHelper;
     }
 
-    public boolean incScore() {
+    public void setBotHelper(@NotNull GameUserBotHelper botHelper) {
+        this.botHelper = botHelper;
+    }
+
+    public void incScore() {
         try {
             if (this.user != null && this.userService != null) {
                 this.userService.incrementUserScore(this.user.getId());
             }
-            return true;
         } catch (DatabaseException e) {
-            return false;
+            LOGGER.info("Raise database exceplion", e);
         }
     }
 

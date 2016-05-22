@@ -18,8 +18,8 @@ import org.hibernate.service.ServiceRegistry;
 
 
 public class DBServiceImpl implements DBService {
-    private SessionFactory sessionFactory;
     private static final Logger LOGGER = LogManager.getLogger(DBServiceImpl.class);
+    private SessionFactory sessionFactory;
 
     public DBServiceImpl(Configuration configuration) throws HibernateException, LaunchException {
         configuration.addAnnotatedClass(UserDataSet.class);

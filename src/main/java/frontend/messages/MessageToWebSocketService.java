@@ -1,6 +1,5 @@
 package frontend.messages;
 
-
 import base.WebSocketService;
 import messagesystem.Abonent;
 import messagesystem.Address;

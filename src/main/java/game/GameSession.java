@@ -30,24 +30,16 @@ public class GameSession implements Abonent {
     private static final int STATE_FINISHED = 2;
 
     private final long startTime;
-    private int state = STATE_NOT_STARTED;
-
-//    private final WebSocketService webSocketService;
-//    private final GameMechanics gameMechanics;
-
     private final GameFieldProperties gameFieldProperties;
-
     private final ArrayList<GameUser> gameUsers = new ArrayList<>();
-    private int gameTurn = 0;
     private final long id;
-
     private final Address address = new Address();
-    private MessageSystem messageSystem;
+    private final MessageSystem messageSystem;
+    private int state = STATE_NOT_STARTED;
+    private int gameTurn = 0;
 
 
     public GameSession(Context context, GameFieldProperties gameFieldProperties) {
-//        this.webSocketService = (WebSocketService) context.get(WebSocketService.class);
-//        this.gameMechanics = (GameMechanics) context.get(GameMechanics.class);
         this.messageSystem = (MessageSystem) context.get(MessageSystem.class);
 
         this.gameFieldProperties = gameFieldProperties;
@@ -105,11 +97,10 @@ public class GameSession implements Abonent {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Finish game session id {}", this.id);
             this.state = STATE_FINISHED;
-//            this.gameUsers.forEach(this.gameMechanics::removeUser);
-            for(GameUser user : gameUsers) {
+            for (GameUser user : gameUsers) {
                 messageSystem.sendMessage(new MessageRemoveUser(this.address,
-                    messageSystem.getAddressService().getGameMechanicsAddressFor(user.getName()),
-                    user));
+                        messageSystem.getAddressService().getGameMechanicsAddressFor(user.getName()),
+                        user));
             }
         }
     }
@@ -132,9 +123,6 @@ public class GameSession implements Abonent {
         if (cb != null) {
             cb.accept(result);
         }
-
-//        this.webSocketService.notifyShootResult(gameUser, result, false);
-//        this.webSocketService.notifyShootResult(opponent, result, true);
 
         messageSystem.sendMessage(new MessageNotifyShootResult(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(),
@@ -170,11 +158,7 @@ public class GameSession implements Abonent {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Win in game session id {}, user {}", this.id, gameUser.getName());
             final GameUser opponent = this.getOpponent(gameUser);
-
             gameUser.incScore();
-//            this.webSocketService.notifyGameOver(gameUser, true);
-//            this.webSocketService.notifyGameOver(opponent, false);
-
             messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     gameUser, true));
@@ -188,8 +172,6 @@ public class GameSession implements Abonent {
     public void tooLong() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Session is too long game session id {}", this.id);
-//            this.webSocketService.notifyTooLong(this.getCurrentTurnUser());
-//            this.webSocketService.notifyTooLong(this.getNextTurnUser());
             messageSystem.sendMessage(new MessageNotifyTooLong(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getCurrentTurnUser()));
@@ -197,8 +179,6 @@ public class GameSession implements Abonent {
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getNextTurnUser()));
 
-//            this.webSocketService.notifyGameOver(this.getCurrentTurnUser(), false);
-//            this.webSocketService.notifyGameOver(this.getNextTurnUser(), false);
             messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getCurrentTurnUser(), false));
@@ -262,16 +242,13 @@ public class GameSession implements Abonent {
 
     public GameUser getOpponent(GameUser user) {
         final int key = this.gameUsers.indexOf(user);
-        if(gameUsers.size() > 1) return this.gameUsers.get((key + 1) % USERS);
+        if (gameUsers.size() > 1) return this.gameUsers.get((key + 1) % USERS);
         return null;
     }
 
     public void notifyStart() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify start in game session id {}", this.id);
-//            this.webSocketService.notifyStartGame(this.getCurrentTurnUser(), this.getNextTurnUser());
-//            this.webSocketService.notifyStartGame(this.getNextTurnUser(), this.getCurrentTurnUser());
-
             messageSystem.sendMessage(new MessageNotifyStart(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getCurrentTurnUser(), this.getNextTurnUser()));
@@ -284,8 +261,6 @@ public class GameSession implements Abonent {
     public void notifyTurn() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify turn in game session id {}", this.id);
-//            this.webSocketService.notifyTurn(this.getCurrentTurnUser(), true);
-//            this.webSocketService.notifyTurn(this.getNextTurnUser(), false);
             messageSystem.sendMessage(new MessageNotifyTurn(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getCurrentTurnUser(), true));
@@ -298,8 +273,6 @@ public class GameSession implements Abonent {
     public void notifyOpponentOnline() {
         if (this.state == STATE_STARTED) {
             LOGGER.info("Notify online in game session id {}", this.id);
-//            this.webSocketService.notifyOpponentOnline(this.getCurrentTurnUser(), this.getNextTurnUser());
-//            this.webSocketService.notifyOpponentOnline(this.getNextTurnUser(), this.getCurrentTurnUser());
             messageSystem.sendMessage(new MessageOpponentOnline(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     this.getCurrentTurnUser(), this.getNextTurnUser()));

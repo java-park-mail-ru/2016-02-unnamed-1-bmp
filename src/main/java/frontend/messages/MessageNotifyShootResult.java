@@ -7,9 +7,9 @@ import messagesystem.Address;
 
 
 public class MessageNotifyShootResult extends MessageToWebSocketService {
-    private GameUser gameUser;
-    private GameFieldShootResult result;
-    private boolean isMine;
+    private final GameUser gameUser;
+    private final GameFieldShootResult result;
+    private final boolean isMine;
 
     public MessageNotifyShootResult(Address from, Address to,
                                     GameUser gameUser, GameFieldShootResult result,

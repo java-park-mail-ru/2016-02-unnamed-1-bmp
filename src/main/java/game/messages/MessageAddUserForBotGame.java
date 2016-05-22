@@ -6,8 +6,8 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageAddUserForBotGame extends MessageToMechanics {
-    private GameUser gameUser;
-    private GameSession gameSession;
+    private final GameUser gameUser;
+    private final GameSession gameSession;
 
     public MessageAddUserForBotGame(Address from, Address to, GameUser user, GameSession gameSession) {
         super(from, to);

@@ -17,7 +17,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     private static final long STEP_TIME = 200;
     private final ConcurrentMap<Long, GameWebSocket> sockets = new ConcurrentHashMap<>();
     private final Address address = new Address();
-    private MessageSystem messageSystem;
+    private final MessageSystem messageSystem;
 
     public WebSocketServiceImpl(Context context) {
         messageSystem = (MessageSystem) context.get(MessageSystem.class);

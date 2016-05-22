@@ -5,8 +5,8 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageNotifyStart extends MessageToWebSocketService {
-    private GameUser gameUser;
-    private GameUser opponent;
+    private final GameUser gameUser;
+    private final GameUser opponent;
 
     public MessageNotifyStart(Address from, Address to,
                               GameUser gameUser, GameUser opponents) {

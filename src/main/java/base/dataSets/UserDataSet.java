@@ -6,10 +6,10 @@ import java.io.Serializable;
 import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name= "users", indexes = {
-        @Index(name="deleted_idx", columnList = "user_is_del"),
-        @Index(name="login_idx", columnList = "user_login," + "user_is_del," + "user_is_anon"),
-        @Index(name="email_idx", columnList = "user_email," + "user_is_del," + "user_is_anon")
+@Table(name = "users", indexes = {
+        @Index(name = "deleted_idx", columnList = "user_is_del"),
+        @Index(name = "login_idx", columnList = "user_login," + "user_is_del," + "user_is_anon"),
+        @Index(name = "email_idx", columnList = "user_email," + "user_is_del," + "user_is_anon")
 })
 public class UserDataSet implements Serializable {
 
@@ -28,21 +28,21 @@ public class UserDataSet implements Serializable {
     private String email;
 
     @Column(name = "user_is_del")
-    @Type(type="yes_no")
+    @Type(type = "yes_no")
     private Boolean isDeleted;
 
     @Column(name = "user_score")
     private Integer score;
 
     @Column(name = "user_is_anon")
-    @Type(type="yes_no")
+    @Type(type = "yes_no")
     private Boolean isAnonymous = false;
 
     public UserDataSet() {
 
     }
 
-    public UserDataSet (String login, String password, String email) {
+    public UserDataSet(String login, String password, String email) {
         this.id = -1L;
         this.login = login;
         this.password = password;
@@ -52,7 +52,7 @@ public class UserDataSet implements Serializable {
         this.isAnonymous = false;
     }
 
-    public UserDataSet (String login) {
+    public UserDataSet(String login) {
         this.id = -1L;
         this.login = login;
         this.password = null;

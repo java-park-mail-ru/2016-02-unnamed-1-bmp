@@ -5,7 +5,7 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageRemoveUser extends MessageToMechanics {
-    private GameUser gameUser;
+    private final GameUser gameUser;
 
     public MessageRemoveUser(Address from, Address to, GameUser user) {
         super(from, to);

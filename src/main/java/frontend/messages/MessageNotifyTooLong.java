@@ -5,7 +5,7 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageNotifyTooLong extends MessageToWebSocketService {
-    private GameUser gameUser;
+    private final GameUser gameUser;
 
     public MessageNotifyTooLong(Address from, Address to, GameUser gameUser) {
         super(from, to);

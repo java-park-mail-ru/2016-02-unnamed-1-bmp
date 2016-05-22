@@ -6,8 +6,8 @@ import messagesystem.Address;
 
 
 public class MessageNotifyTurn extends MessageToWebSocketService {
-    private GameUser gameUser;
-    private boolean itsTurn;
+    private final GameUser gameUser;
+    private final boolean itsTurn;
 
     public MessageNotifyTurn(Address from, Address to,
                              GameUser gameUser, boolean isHis) {

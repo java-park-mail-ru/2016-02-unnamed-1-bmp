@@ -5,7 +5,7 @@ import frontend.GameWebSocket;
 import messagesystem.Address;
 
 public final class MessageAddSocket extends MessageToWebSocketService {
-    private GameWebSocket gameWebSocket;
+    private final GameWebSocket gameWebSocket;
 
     public MessageAddSocket(Address from, Address to, GameWebSocket webSocket) {
         super(from, to);

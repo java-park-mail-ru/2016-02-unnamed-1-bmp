@@ -7,15 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AddressService {
+    private final List<Address> gameMechanicsList = new ArrayList<>();
     private Address webSocketService;
-    private List<Address> gameMechanicsList = new ArrayList<>();
 
     public void registerGameMechanics(GameMechanics gameMechanics) {
         gameMechanicsList.add(gameMechanics.getAddress());
     }
 
-    public void registerWebSocketService(WebSocketService webSocketService) {
-        this.webSocketService = webSocketService.getAddress();
+    public void registerWebSocketService(WebSocketService socketService) {
+        this.webSocketService = socketService.getAddress();
     }
 
     public Address getWebSocketServiceAddress() {

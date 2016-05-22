@@ -1,6 +1,7 @@
 package game;
 
 import com.sun.istack.internal.Nullable;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,19 +15,6 @@ public final class GameFieldProperties {
 
     private GameFieldProperties(Properties gameData) {
         this.gameData = gameData;
-    }
-
-    public int getSize() {
-        return Integer.valueOf(this.gameData.getProperty("size"));
-    }
-
-    public int getMaxDeck() {
-        return Integer.valueOf(this.gameData.getProperty("maxdeck"));
-    }
-
-    public int getShips(int decks) {
-        final String count = this.gameData.getProperty("ship" + String.valueOf(decks));
-        return count == null ? 0 : Integer.valueOf(count);
     }
 
     @Nullable
@@ -51,5 +39,18 @@ public final class GameFieldProperties {
     @Nullable
     public static GameFieldProperties getProperties() {
         return getProperties("10x10");
+    }
+
+    public int getSize() {
+        return Integer.valueOf(this.gameData.getProperty("size"));
+    }
+
+    public int getMaxDeck() {
+        return Integer.valueOf(this.gameData.getProperty("maxdeck"));
+    }
+
+    public int getShips(int decks) {
+        final String count = this.gameData.getProperty("ship" + String.valueOf(decks));
+        return count == null ? 0 : Integer.valueOf(count);
     }
 }

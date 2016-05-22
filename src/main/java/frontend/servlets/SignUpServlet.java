@@ -157,7 +157,7 @@ public class SignUpServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         responseBody.add("id", new JsonPrimitive(currUserId));
         responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
-        if(currUser.getEmail() != null) {
+        if (currUser.getEmail() != null) {
             responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
         }
         responseBody.add("score", new JsonPrimitive(currUser.getScore()));

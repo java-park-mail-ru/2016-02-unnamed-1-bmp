@@ -2,18 +2,10 @@ package game;
 
 public class GameFieldShootResult {
 
-    public enum GameFieldShootState {
-        STATE_MISS,
-        STATE_ALREADY,
-        STATE_WOUND,
-        STATE_KILLED
-    }
-
     private final GameFieldShootState state;
     private final GameFieldShip ship;
     private final int shootX;
     private final int shootY;
-
     GameFieldShootResult(int x, int y, GameFieldShootState state) {
         this.shootX = x;
         this.shootY = y;
@@ -58,6 +50,13 @@ public class GameFieldShootResult {
 
     public boolean isKilled() {
         return this.state == GameFieldShootState.STATE_KILLED;
+    }
+
+    public enum GameFieldShootState {
+        STATE_MISS,
+        STATE_ALREADY,
+        STATE_WOUND,
+        STATE_KILLED
     }
 
 }

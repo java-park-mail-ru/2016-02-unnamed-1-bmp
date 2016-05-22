@@ -5,7 +5,7 @@ import game.GameUser;
 import messagesystem.Address;
 
 public class MessageRemoveSocketByUser extends MessageToWebSocketService {
-    private GameUser gameUser;
+    private final GameUser gameUser;
 
 
     public MessageRemoveSocketByUser(Address from, Address to, GameUser gameUser) {

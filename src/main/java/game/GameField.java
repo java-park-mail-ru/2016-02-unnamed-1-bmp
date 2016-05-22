@@ -11,6 +11,43 @@ public class GameField {
         this.gameFieldProperties = gameFieldProperties;
     }
 
+    public static GameField generateRandomField(GameFieldProperties gameFieldProperties) {
+        final int maxDeck = gameFieldProperties.getMaxDeck();
+        final int size = gameFieldProperties.getSize();
+
+        final GameField field = new GameField(gameFieldProperties);
+        final ArrayList<GameFieldShipDeck> busyCells = new ArrayList<>();
+        for (int decks = maxDeck; decks > 0; decks--) {
+            final int maxShips = gameFieldProperties.getShips(decks);
+            for (int ships = 0; ships < maxShips; ships++) {
+                while (true) {
+                    final int x = (int) Math.floor(Math.random() * size) + 1;
+                    final int y = (int) Math.floor(Math.random() * size) + 1;
+
+                    if (busyCells.contains(new GameFieldShipDeck(x, y))) {
+                        continue;
+                    }
+                    final boolean vertical = Math.random() > 0.49;
+
+                    GameFieldShip ship;
+                    if (field.addShip(ship = new GameFieldShip(x, y, decks, vertical))) {
+                        ship.getDecks().forEach(busyCells::add);
+                        ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
+                        break;
+                    }
+                    if (field.addShip(ship = new GameFieldShip(x, y, decks, !vertical))) {
+                        ship.getDecks().forEach(busyCells::add);
+                        ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return field;
+
+    }
+
     public GameFieldProperties getProperties() {
         return this.gameFieldProperties;
     }
@@ -73,42 +110,5 @@ public class GameField {
             }
         }
         return true;
-    }
-
-    public static GameField generateRandomField(GameFieldProperties gameFieldProperties) {
-        final int maxDeck = gameFieldProperties.getMaxDeck();
-        final int size = gameFieldProperties.getSize();
-
-        final GameField field = new GameField(gameFieldProperties);
-        final ArrayList<GameFieldShipDeck> busyCells = new ArrayList<>();
-        for (int decks = maxDeck; decks > 0; decks--) {
-            final int maxShips = gameFieldProperties.getShips(decks);
-            for (int ships = 0; ships < maxShips; ships++) {
-                while (true) {
-                    final int x = (int) Math.floor(Math.random() * size) + 1;
-                    final int y = (int) Math.floor(Math.random() * size) + 1;
-
-                    if (busyCells.contains(new GameFieldShipDeck(x, y))) {
-                        continue;
-                    }
-                    final boolean vertical = Math.random() > 0.49;
-
-                    GameFieldShip ship;
-                    if (field.addShip(ship = new GameFieldShip(x, y, decks, vertical))) {
-                        ship.getDecks().forEach(busyCells::add);
-                        ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
-                        break;
-                    }
-                    if (field.addShip(ship = new GameFieldShip(x, y, decks, !vertical))) {
-                        ship.getDecks().forEach(busyCells::add);
-                        ship.getNearDecks(gameFieldProperties).forEach(busyCells::add);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return field;
-
     }
 }

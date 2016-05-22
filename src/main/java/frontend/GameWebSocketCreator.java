@@ -13,10 +13,10 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
 public class GameWebSocketCreator implements WebSocketCreator {
+    private static final Logger LOGGER = LogManager.getLogger(GameWebSocketCreator.class);
     final Context context;
     private final AccountService accountService;
     private final UserService userService;
-    private static final Logger LOGGER = LogManager.getLogger(GameWebSocketCreator.class);
 
     public GameWebSocketCreator(Context context) {
         this.context = context;
