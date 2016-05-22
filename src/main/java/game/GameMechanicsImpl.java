@@ -61,7 +61,7 @@ public class GameMechanicsImpl implements GameMechanics {
     }
 
     @Override
-    public boolean addUserForRandomGame(GameUser gameUser) {
+    public boolean addUserForRandomGame(GameUser gameUser, GameSession gameSession) {
         LOGGER.info("Attempting to add user to random game, user {}", gameUser.getName());
         if (gameUser.getUser() == null || this.hasUserGameSession(gameUser.getUser())) {
 //            this.webSocketService.notifyInitGame(gameUser, false, null);
@@ -71,7 +71,7 @@ public class GameMechanicsImpl implements GameMechanics {
         }
 
         if (this.waiters.isEmpty()) {
-            final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
+//            final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
             if (gameSession.addUser(gameUser)) {
                 LOGGER.info("Add user to random game (to waiters), user {}, game session id {}",
                         gameUser.getName(), gameSession.getId());
@@ -88,17 +88,17 @@ public class GameMechanicsImpl implements GameMechanics {
             }
         } else {
             final long userId = this.waiters.remove(0);
-            final GameSession gameSession = this.usersToSessions.get(userId);
+            final GameSession checkGameSession = this.usersToSessions.get(userId);
 
-            if (gameSession.addUser(gameUser)) {
+            if (checkGameSession.addUser(gameUser)) {
                 LOGGER.info("Add user to random game, user {}, game session id {}",
-                        gameUser.getName(), gameSession.getId());
+                        gameUser.getName(), checkGameSession.getId());
                 this.gameUsers.put(gameUser.getUser().getId(), gameUser);
-                this.usersToSessions.put(gameUser.getUser().getId(), gameSession);
+                this.usersToSessions.put(gameUser.getUser().getId(), checkGameSession);
 //                this.webSocketService.notifyInitGame(gameUser, true, null);
                 messageSystem.sendMessage(new MessageNotifyInitGame(this.address,
                         messageSystem.getAddressService().getWebSocketServiceAddress(), gameUser, true, null));
-                gameSession.start();
+                checkGameSession.start();
                 return true;
             } else {
                 this.waiters.add(userId);
@@ -111,7 +111,7 @@ public class GameMechanicsImpl implements GameMechanics {
     }
 
     @Override
-    public boolean addUserForBotGame(GameUser gameUser) {
+    public boolean addUserForBotGame(GameUser gameUser, GameSession gameSession) {
         LOGGER.info("Attempting to add user to bot game, user {}", gameUser.getName());
         if (gameUser.getUser() == null || this.hasUserGameSession(gameUser.getUser())) {
 //            this.webSocketService.notifyInitGame(gameUser, false, null);
@@ -120,7 +120,7 @@ public class GameMechanicsImpl implements GameMechanics {
             return false;
         }
 
-        final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
+//        final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
         if (gameSession.addUser(gameUser)) {
             LOGGER.info("Add user to bot game, user {}, game session id {}",
                     gameUser.getName(), gameSession.getId());

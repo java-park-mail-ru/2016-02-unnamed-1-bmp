@@ -13,9 +13,9 @@ public interface GameMechanics extends Abonent, Runnable {
 
     GameUser getGameUser(UserDataSet user);
 
-    boolean addUserForRandomGame(GameUser gameUser);
+    boolean addUserForRandomGame(GameUser gameUser, GameSession gameSession);
 
-    boolean addUserForBotGame(GameUser gameUser);
+    boolean addUserForBotGame(GameUser gameUser, GameSession gameSession);
 
     boolean addUserForFriendGame(GameUser gameUser, @Nullable Long gameSessionId);
 

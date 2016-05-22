@@ -11,6 +11,7 @@ public class MessageNotifyStart extends MessageToWebSocketService {
     public MessageNotifyStart(Address from, Address to,
                               GameUser gameUser, GameUser opponents) {
         super(from, to);
+        this.gameUser = gameUser;
         this.opponent = opponents;
     }
 

@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+#
+# Generates logotypes
+#
+
+template = "logo.svg"
+
+colors = {
+    "grey" =>        "#444"
+}
+
+sizes = [
+    [16, true],
+    [20, false],
+    [25, false],
+    [32, true],
+    [64, true],
+    [128, true],
+    [256, false],
+    [512, false],
+    [1024, false]
+]
+
+t = File.read(template)
+
+colors.each do |k, v|
+    puts "------- #{k}"
+    svgfile = "/tmp/logo-#{k}.svg"
+    File.open(svgfile, "w") do |f|
+        tmp = t.gsub(/\{fill\}/, v)
+        f.write(tmp)
+        f.close
+    end
+
+    sizes.each do |s|
+        size = s[0]
+        puts "---- #{size}"
+        ico = s[1] == true
+        pngfile = "logo-#{k}-#{size}.png"
+        `svg2png -w #{size} -h #{size} #{svgfile} #{pngfile}`
+
+        icofile = "logo-#{k}-#{size}.ico"
+        `png2ico #{icofile} #{pngfile}` if ico
+    end
+end

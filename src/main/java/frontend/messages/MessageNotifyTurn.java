@@ -13,6 +13,7 @@ public class MessageNotifyTurn extends MessageToWebSocketService {
                              GameUser gameUser, boolean isHis) {
         super(from, to);
         this.itsTurn = isHis;
+        this.gameUser = gameUser;
     }
 
     @Override

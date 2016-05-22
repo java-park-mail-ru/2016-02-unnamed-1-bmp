@@ -106,11 +106,11 @@ public class GameSession implements Abonent {
             LOGGER.info("Finish game session id {}", this.id);
             this.state = STATE_FINISHED;
 //            this.gameUsers.forEach(this.gameMechanics::removeUser);
-            this.gameUsers.forEach(messageSystem.sendMessage(new MessageRemoveUser(this.address,
-                    messageSystem.getAddressService().getGameMechanicsAddressFor(),
-                    gameUser, result, false));)
-
-            
+            for(GameUser user : gameUsers) {
+                messageSystem.sendMessage(new MessageRemoveUser(this.address,
+                    messageSystem.getAddressService().getGameMechanicsAddressFor(user.getName()),
+                    user));
+            }
         }
     }
 
@@ -262,7 +262,8 @@ public class GameSession implements Abonent {
 
     public GameUser getOpponent(GameUser user) {
         final int key = this.gameUsers.indexOf(user);
-        return this.gameUsers.get((key + 1) % USERS);
+        if(gameUsers.size() > 1) return this.gameUsers.get((key + 1) % USERS);
+        return null;
     }
 
     public void notifyStart() {

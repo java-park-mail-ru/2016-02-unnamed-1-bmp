@@ -20,7 +20,6 @@ public class MessageNotifyInitGame extends MessageToWebSocketService {
     @Override
     protected void exec(WebSocketService webSocketService) {
         webSocketService.notifyInitGame(gameUser, ok, gameSessionId);
-        ;
     }
 
 }

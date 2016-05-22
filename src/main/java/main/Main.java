@@ -69,9 +69,24 @@ public class Main {
         classContext.add(UserService.class, userService);
         classContext.add(AccountService.class, accountService);
 
-
         final MessageSystem messageSystem = new MessageSystem();
         classContext.add(MessageSystem.class, messageSystem);
+
+        final GameMechanics gameMechanicsOne = new GameMechanicsImpl(classContext);
+        final GameMechanics gameMechanicsTwo = new GameMechanicsImpl(classContext);
+        final WebSocketService webSocketService = new WebSocketServiceImpl(classContext);
+
+        messageSystem.addService(gameMechanicsOne);
+        messageSystem.addService(gameMechanicsTwo);
+        messageSystem.addService(webSocketService);
+
+        messageSystem.getAddressService().registerGameMechanics(gameMechanicsOne);
+        messageSystem.getAddressService().registerGameMechanics(gameMechanicsTwo);
+        messageSystem.getAddressService().registerWebSocketService(webSocketService);
+
+        (new Thread(gameMechanicsOne)).start();
+        (new Thread(gameMechanicsTwo)).start();
+        (new Thread(webSocketService)).start();
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");
@@ -96,6 +111,6 @@ public class Main {
         server.setHandler(handlers);
 
         server.start();
-//        gameMechanics.run();
+        server.join();
     }
 }
