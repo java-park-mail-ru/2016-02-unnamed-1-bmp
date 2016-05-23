@@ -152,7 +152,7 @@ public class SignUpServletTest extends FrontendTest {
         signUpServlet.doPost(request, response);
 
         verify(response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Email already exist\""));
+        assertThat(stringWriter.toString(), StringContains.containsString("{\"error\":\"Данный email уже зарегистрирован\""));
         assertThat(stringWriter.toString(), StringContains.containsString("\"field\":\"email\""));
     }
 

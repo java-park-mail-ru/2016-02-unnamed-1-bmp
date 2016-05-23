@@ -80,6 +80,7 @@ public class Main {
         (new Thread(gameMechanicsOne)).start();
         (new Thread(gameMechanicsTwo)).start();
         (new Thread(webSocketService)).start();
+        LOGGER.info("Started threads");
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.addServlet(new ServletHolder(new SignInServlet(classContext)), "/api/session");

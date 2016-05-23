@@ -48,8 +48,7 @@ public class DBServiceImpl implements DBService {
             session.getTransaction().commit();
             return result;
         } catch (HibernateException e) {
-            if ( transaction != null && (transaction.getStatus() == TransactionStatus.ACTIVE
-                    || transaction.getStatus() == TransactionStatus.MARKED_ROLLBACK)) {
+            if ( transaction != null && transaction.getStatus() == TransactionStatus.MARKED_ROLLBACK) {
                 transaction.rollback();
             }
             throw new DatabaseException("Fail to perform a transaction",e);
