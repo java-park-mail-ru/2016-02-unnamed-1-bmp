@@ -34,7 +34,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         int port = DEFAULT_PORT;
         String host = DEFAULT_HOST;
-
         try (final FileInputStream serverProps = new FileInputStream("setups/server.properties")) {
             final Properties properties = new Properties();
             properties.load(serverProps);
