@@ -1,6 +1,5 @@
 package game;
 
-import com.sun.istack.internal.Nullable;
 import frontend.messages.*;
 import game.messages.MessageRemoveUser;
 import main.Context;
@@ -9,6 +8,7 @@ import messagesystem.Address;
 import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,7 +99,7 @@ public class GameSession implements Abonent {
             this.state = STATE_FINISHED;
             for (GameUser user : gameUsers) {
                 messageSystem.sendMessage(new MessageRemoveUser(this.address,
-                        messageSystem.getAddressService().getGameMechanicsAddressFor(user.getName()),
+                        messageSystem.getAddressService().getGameMechanicsAddressFor(user.getUser()),
                         user));
             }
         }

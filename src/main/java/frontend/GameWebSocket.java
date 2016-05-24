@@ -8,10 +8,7 @@ import frontend.messages.MessageAddSocket;
 import frontend.messages.MessageOpponentOnline;
 import frontend.messages.MessageRemoveSocket;
 import game.*;
-import game.messages.MessageAddUserForBotGame;
-import game.messages.MessageAddUserForFriendGame;
-import game.messages.MessageAddUserForRandomGame;
-import game.messages.MessageRemoveUser;
+import game.messages.*;
 import main.Context;
 import messagesystem.Abonent;
 import messagesystem.Address;
@@ -33,15 +30,11 @@ public class GameWebSocket implements Abonent {
     private final Address address = new Address();
     private final MessageSystem messageSystem;
     private final UserDataSet user;
-    private final Context context;
     private final UserService userService;
     private Session session;
-    private GameSession gameSession;
-    private GameUser gameUser;
 
     GameWebSocket(@NotNull UserDataSet user, Context context) {
         this.user = user;
-        this.context = context;
         this.messageSystem = (MessageSystem) context.get(MessageSystem.class);
         this.userService = (UserService) context.get(UserService.class);
     }
@@ -58,16 +51,19 @@ public class GameWebSocket implements Abonent {
         messageSystem.sendMessage(new MessageAddSocket(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
 
-        if (gameUser != null && gameSession != null) {
-            gameUser.setOnline();
-            final GameUser opponent = gameSession.getOpponent(gameUser);
-            if (opponent != null) {
-                messageSystem.sendMessage(new MessageOpponentOnline(this.address,
-                        messageSystem.getAddressService().getWebSocketServiceAddress(),
-                        opponent, gameUser));
-
+        messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
+                messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                this.user, (gameUser, gameSession) -> {
+            if (gameUser != null && gameSession != null) {
+                gameUser.setOnline();
+                final GameUser opponent = gameSession.getOpponent(gameUser);
+                if (opponent != null) {
+                    messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                            messageSystem.getAddressService().getWebSocketServiceAddress(),
+                            opponent, gameUser));
+                }
             }
-        }
+        }));
     }
 
     @SuppressWarnings({"unused", "UnusedParameters"})
@@ -76,16 +72,21 @@ public class GameWebSocket implements Abonent {
         LOGGER.info("Closed web socket, user id {}", this.user.getId());
         messageSystem.sendMessage(new MessageRemoveSocket(this.address,
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
-        if (gameUser != null && gameSession != null) {
-            gameUser.setOffline();
 
-            final GameUser opponent = gameSession.getOpponent(gameUser);
-            if (opponent != null) {
-                messageSystem.sendMessage(new MessageOpponentOnline(this.address,
-                        messageSystem.getAddressService().getWebSocketServiceAddress(),
-                        opponent, gameUser));
+        messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
+                messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                this.user, (gameUser, gameSession) -> {
+            if (gameUser != null && gameSession != null) {
+                gameUser.setOffline();
+
+                final GameUser opponent = gameSession.getOpponent(gameUser);
+                if (opponent != null) {
+                    messageSystem.sendMessage(new MessageOpponentOnline(this.address,
+                            messageSystem.getAddressService().getWebSocketServiceAddress(),
+                            opponent, gameUser));
+                }
             }
-        }
+        }));
     }
 
     @SuppressWarnings("unused")
@@ -131,39 +132,43 @@ public class GameWebSocket implements Abonent {
     public void onMessageGetGameStatus() {
         final GameWebSocketMessage result = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_STATUS);
 
-        if (gameSession == null) {
-            result.setOk(false);
-            this.send(result.getAsJSON());
-            return;
-        }
-        result.setId(gameSession.getId());
-        final JsonObject resultJson = result.getAsJSON();
-        resultJson.add("started", new JsonPrimitive(gameSession.isStarted()));
-        final JsonArray shipsJson = collectShips(gameUser, true);
-        resultJson.add("ships", shipsJson);
-        final JsonArray shootsJson = collectShoots(gameUser);
-        resultJson.add("shoots", shootsJson);
-
-        if (gameSession.isStarted()) {
-            final GameUser opponent = gameSession.getOpponent(gameUser);
-            if (opponent != null) {
-                gameSession.notifyOpponentOnline();
-                final String opponentName = opponent.getName();
-                resultJson.add("opponentName", new JsonPrimitive(opponentName));
-                final JsonArray opponentShipsJson = collectShips(opponent, false);
-                resultJson.add("opponentShips", opponentShipsJson);
-                final JsonArray opponentShootsJson = collectShoots(opponent);
-                resultJson.add("opponentShoots", opponentShootsJson);
+        messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
+                messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                this.user, (gameUser, gameSession) -> {
+            if (gameSession == null) {
+                result.setOk(false);
+                this.send(result.getAsJSON());
+                return;
             }
-        }
+            result.setId(gameSession.getId());
+            final JsonObject resultJson = result.getAsJSON();
+            resultJson.add("started", new JsonPrimitive(gameSession.isStarted()));
+            final JsonArray shipsJson = this.collectShips(gameUser, true);
+            resultJson.add("ships", shipsJson);
+            final JsonArray shootsJson = this.collectShoots(gameUser);
+            resultJson.add("shoots", shootsJson);
 
-        this.send(resultJson);
+            if (gameSession.isStarted()) {
+                final GameUser opponent = gameSession.getOpponent(gameUser);
+                if (opponent != null) {
+                    gameSession.notifyOpponentOnline();
+                    final String opponentName = opponent.getName();
+                    resultJson.add("opponentName", new JsonPrimitive(opponentName));
+                    final JsonArray opponentShipsJson = collectShips(opponent, false);
+                    resultJson.add("opponentShips", opponentShipsJson);
+                    final JsonArray opponentShootsJson = collectShoots(opponent);
+                    resultJson.add("opponentShoots", opponentShootsJson);
+                }
+            }
+
+            this.send(resultJson);
+        }));
     }
 
     private JsonArray collectShips(GameUser gameuser, boolean all) {
         final JsonArray shipsJson = new JsonArray();
         Stream<GameFieldShip> ships = gameuser.getField().getShips().stream();
-        if(!all) {
+        if (!all) {
             ships = ships.filter(GameFieldShip::isKilled);
         }
 
@@ -212,8 +217,7 @@ public class GameWebSocket implements Abonent {
             gameField.addShip(shipObj);
         });
 
-        gameUser = new GameUser(this.user, gameField, userService);
-        gameSession = new GameSession(this.context, gameUser.getFieldProperties());
+        final GameUser gameUser = new GameUser(this.user, gameField, userService);
 
         if (!gameField.isValid()) {
             this.send(new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, "Game field is invalid"));
@@ -223,37 +227,45 @@ public class GameWebSocket implements Abonent {
         switch (gameMode) {
             case "bot":
                 messageSystem.sendMessage(new MessageAddUserForBotGame(this.address,
-                        messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
-                        gameUser, gameSession));
+                        messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                        gameUser));
                 break;
             case "friend":
                 final JsonElement gameSessionIdElement = message.getAsJsonPrimitive("id");
                 final Long gameSessionId = gameSessionIdElement == null ? null : gameSessionIdElement.getAsLong();
                 messageSystem.sendMessage(new MessageAddUserForFriendGame(this.address,
-                        messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
+                        messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
                         gameUser, gameSessionId));
                 break;
             case "random":
             default:
                 messageSystem.sendMessage(new MessageAddUserForRandomGame(this.address,
-                        messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
-                        gameUser, gameSession));
+                        messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                        gameUser));
                 break;
         }
     }
 
     public void onMessageGiveUp() {
-        if (gameSession != null && gameUser != null) {
-            gameSession.giveUp(gameUser);
-        }
+        messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
+                messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                this.user, (gameUser, gameSession) -> {
+            if (gameSession != null && gameUser != null) {
+                gameSession.giveUp(gameUser);
+            }
+        }));
     }
 
     public void onMessageShoot(JsonObject message) {
-        final int x = message.getAsJsonPrimitive("x").getAsInt();
-        final int y = message.getAsJsonPrimitive("y").getAsInt();
-        if (gameSession != null && gameUser != null) {
-            gameSession.shoot(gameUser, x, y, null);
-        }
+        messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
+                messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
+                this.user, (gameUser, gameSession) -> {
+            if (gameSession != null && gameUser != null) {
+                final int x = message.getAsJsonPrimitive("x").getAsInt();
+                final int y = message.getAsJsonPrimitive("y").getAsInt();
+                gameSession.shoot(gameUser, x, y, null);
+            }
+        }));
     }
 
     public void send(String message) {

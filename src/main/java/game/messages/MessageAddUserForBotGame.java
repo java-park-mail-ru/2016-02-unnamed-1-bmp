@@ -7,16 +7,14 @@ import messagesystem.Address;
 
 public class MessageAddUserForBotGame extends MessageToMechanics {
     private final GameUser gameUser;
-    private final GameSession gameSession;
 
-    public MessageAddUserForBotGame(Address from, Address to, GameUser user, GameSession gameSession) {
+    public MessageAddUserForBotGame(Address from, Address to, GameUser user) {
         super(from, to);
         this.gameUser = user;
-        this.gameSession = gameSession;
     }
 
     @Override
     protected void exec(GameMechanics gameMechanics) {
-        gameMechanics.addUserForBotGame(gameUser, gameSession);
+        gameMechanics.addUserForBotGame(this.gameUser);
     }
 }

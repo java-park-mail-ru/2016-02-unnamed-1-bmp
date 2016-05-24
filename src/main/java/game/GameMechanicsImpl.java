@@ -56,7 +56,7 @@ public class GameMechanicsImpl implements GameMechanics {
     }
 
     @Override
-    public void addUserForRandomGame(GameUser gameUser, GameSession gameSession) {
+    public void addUserForRandomGame(GameUser gameUser) {
         LOGGER.info("Attempting to add user to random game, user {}", gameUser.getName());
         if (gameUser.getUser() == null || this.hasUserGameSession(gameUser.getUser())) {
             messageSystem.sendMessage(new MessageNotifyInitGame(this.address,
@@ -65,6 +65,7 @@ public class GameMechanicsImpl implements GameMechanics {
         }
 
         if (this.waiters.isEmpty()) {
+            final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
             if (gameSession.addUser(gameUser)) {
                 LOGGER.info("Add user to random game (to waiters), user {}, game session id {}",
                         gameUser.getName(), gameSession.getId());
@@ -100,7 +101,7 @@ public class GameMechanicsImpl implements GameMechanics {
     }
 
     @Override
-    public void addUserForBotGame(GameUser gameUser, GameSession gameSession) {
+    public void addUserForBotGame(GameUser gameUser) {
         LOGGER.info("Attempting to add user to bot game, user {}", gameUser.getName());
         if (gameUser.getUser() == null || this.hasUserGameSession(gameUser.getUser())) {
             messageSystem.sendMessage(new MessageNotifyInitGame(this.address,
@@ -108,6 +109,7 @@ public class GameMechanicsImpl implements GameMechanics {
             return;
         }
 
+        final GameSession gameSession = new GameSession(this.context, gameUser.getFieldProperties());
         if (gameSession.addUser(gameUser)) {
             LOGGER.info("Add user to bot game, user {}, game session id {}",
                     gameUser.getName(), gameSession.getId());

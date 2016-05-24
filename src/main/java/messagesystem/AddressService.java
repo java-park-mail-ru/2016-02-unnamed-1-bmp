@@ -1,6 +1,7 @@
 package messagesystem;
 
 import base.WebSocketService;
+import base.datasets.UserDataSet;
 import game.GameMechanics;
 
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public final class AddressService {
     }
 
 
-    public synchronized Address getGameMechanicsAddressFor(String userName) {
-        final int index = Math.abs(userName.hashCode()) % gameMechanicsList.size();
+    public synchronized Address getGameMechanicsAddressFor(UserDataSet user) {
+        final int index = Math.abs(user.getLogin().hashCode()) % gameMechanicsList.size();
         return gameMechanicsList.get(index);
     }
 }
