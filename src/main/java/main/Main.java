@@ -15,8 +15,10 @@ import game.*;
 import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.hibernate.cfg.Configuration;
@@ -100,11 +102,15 @@ public class Main {
         context.addServlet(new ServletHolder(new WebSocketGameServlet(classContext)), "/gameplay");
         LOGGER.info("Created servlets");
 
+        final HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[]{ context });
+
         final Server server = new Server();
         final ServerConnector http = new ServerConnector(server);
         http.setHost(host);
         http.setPort(port);
         server.addConnector(http);
+        server.setHandler(handlers);
 
         server.start();
         server.join();
