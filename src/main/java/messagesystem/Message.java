@@ -1,10 +1,12 @@
 package messagesystem;
 
+import org.jetbrains.annotations.Nullable;
+
 public abstract class Message {
     private final Address from;
     private final Address to;
 
-    public Message(Address from, Address to) {
+    public Message(Address from, @Nullable Address to) {
         this.from = from;
         this.to = to;
     }
@@ -13,6 +15,7 @@ public abstract class Message {
         return from;
     }
 
+    @Nullable
     public Address getTo() {
         return to;
     }

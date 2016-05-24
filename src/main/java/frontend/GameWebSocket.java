@@ -154,9 +154,9 @@ public class GameWebSocket implements Abonent {
                     gameSession.notifyOpponentOnline();
                     final String opponentName = opponent.getName();
                     resultJson.add("opponentName", new JsonPrimitive(opponentName));
-                    final JsonArray opponentShipsJson = collectShips(opponent, false);
+                    final JsonArray opponentShipsJson = this.collectShips(opponent, false);
                     resultJson.add("opponentShips", opponentShipsJson);
-                    final JsonArray opponentShootsJson = collectShoots(opponent);
+                    final JsonArray opponentShootsJson = this.collectShoots(opponent);
                     resultJson.add("opponentShoots", opponentShootsJson);
                 }
             }
@@ -165,9 +165,9 @@ public class GameWebSocket implements Abonent {
         }));
     }
 
-    private JsonArray collectShips(GameUser gameuser, boolean all) {
+    private JsonArray collectShips(GameUser gameUser, boolean all) {
         final JsonArray shipsJson = new JsonArray();
-        Stream<GameFieldShip> ships = gameuser.getField().getShips().stream();
+        Stream<GameFieldShip> ships = gameUser.getField().getShips().stream();
         if (!all) {
             ships = ships.filter(GameFieldShip::isKilled);
         }
@@ -183,9 +183,9 @@ public class GameWebSocket implements Abonent {
         return shipsJson;
     }
 
-    private JsonArray collectShoots(GameUser gameuser) {
+    private JsonArray collectShoots(GameUser gameUser) {
         final JsonArray shootsJson = new JsonArray();
-        gameuser.getField().getShoots().forEach(shoot -> {
+        gameUser.getField().getShoots().forEach(shoot -> {
             final JsonArray shootJson = new JsonArray();
             shootJson.add(shoot.getX());
             shootJson.add(shoot.getY());
@@ -250,7 +250,7 @@ public class GameWebSocket implements Abonent {
         messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
                 messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
                 this.user, (gameUser, gameSession) -> {
-            if (gameSession != null && gameUser != null) {
+            if (gameSession != null) {
                 gameSession.giveUp(gameUser);
             }
         }));

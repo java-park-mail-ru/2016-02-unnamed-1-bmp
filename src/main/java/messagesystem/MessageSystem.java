@@ -17,7 +17,9 @@ public final class MessageSystem {
     }
 
     public void sendMessage(Message message) {
-        messages.get(message.getTo()).add(message);
+        if(message.getTo() != null) {
+            messages.get(message.getTo()).add(message);
+        }
     }
 
     public void execForAbonent(Abonent abonent) {
