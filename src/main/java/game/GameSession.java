@@ -117,6 +117,10 @@ public class GameSession implements Abonent {
 
         final GameUser opponent = this.getOpponent(gameUser);
 
+        if(opponent == null) {
+            return;
+        }
+
         final GameFieldShootResult result = opponent.getField().shoot(x, y);
         LOGGER.info("Shoot in game session id {}, user {}, x {}, y {}, result {}", this.id, gameUser.getName(), x, y, result.getState());
 
@@ -151,7 +155,9 @@ public class GameSession implements Abonent {
 
         final GameUser opponent = this.getOpponent(gameUser);
 
-        this.win(opponent);
+        if(opponent != null) {
+            this.win(opponent);
+        }
     }
 
     public void win(GameUser gameUser) {
@@ -162,9 +168,11 @@ public class GameSession implements Abonent {
             messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     gameUser, true));
-            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
-                    messageSystem.getAddressService().getWebSocketServiceAddress(),
-                    opponent, false));
+            if(opponent != null) {
+                messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                        messageSystem.getAddressService().getWebSocketServiceAddress(),
+                        opponent, false));
+            }
             this.finish();
         }
     }
@@ -240,6 +248,7 @@ public class GameSession implements Abonent {
         }
     }
 
+    @Nullable
     public GameUser getOpponent(GameUser user) {
         final int key = this.gameUsers.indexOf(user);
         if (gameUsers.size() > 1) return this.gameUsers.get((key + 1) % USERS);
