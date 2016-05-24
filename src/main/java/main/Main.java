@@ -76,9 +76,21 @@ public class Main {
         messageSystem.getAddressService().registerGameMechanics(gameMechanicsTwo);
         messageSystem.getAddressService().registerWebSocketService(webSocketService);
 
-        (new Thread(gameMechanicsOne)).start();
-        (new Thread(gameMechanicsTwo)).start();
-        (new Thread(webSocketService)).start();
+        final Thread gameMechanicsThreadOne = new Thread(gameMechanicsOne);
+        gameMechanicsThreadOne.setDaemon(true);
+        gameMechanicsThreadOne.setName("First game mechanics");
+
+        final Thread gameMechanicsThreadTwo = new Thread(gameMechanicsTwo);
+        gameMechanicsThreadTwo.setDaemon(true);
+        gameMechanicsThreadTwo.setName("Second game mechanics");
+
+        final Thread webSocketServiceThread = new Thread(webSocketService);
+        webSocketServiceThread.setDaemon(true);
+        webSocketServiceThread.setName("Web socket");
+
+        gameMechanicsThreadOne.start();
+        gameMechanicsThreadTwo.start();
+        webSocketServiceThread.start();
         LOGGER.info("Started threads");
 
         final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
