@@ -98,6 +98,7 @@ public class GameSession implements Abonent {
             LOGGER.info("Finish game session id {}", this.id);
             this.state = STATE_FINISHED;
             for (GameUser user : gameUsers) {
+                if(user.getUser() == null) continue;
                 messageSystem.sendMessage(new MessageRemoveUser(this.address,
                         messageSystem.getAddressService().getGameMechanicsAddressFor(user.getUser()),
                         user));

@@ -130,11 +130,11 @@ public class GameWebSocket implements Abonent {
     }
 
     public void onMessageGetGameStatus() {
-        final GameWebSocketMessage result = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_STATUS);
-
         messageSystem.sendMessage(new MessageGetGameUserAndSessionFor(this.address,
                 messageSystem.getAddressService().getGameMechanicsAddressFor(this.user),
                 this.user, (gameUser, gameSession) -> {
+            final GameWebSocketMessage result = new GameWebSocketMessage(GameWebSocketMessage.MessageType.GAME_STATUS);
+
             if (gameSession == null) {
                 result.setOk(false);
                 this.send(result.getAsJSON());
