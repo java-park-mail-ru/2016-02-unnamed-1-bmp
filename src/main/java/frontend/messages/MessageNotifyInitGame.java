@@ -3,6 +3,7 @@ package frontend.messages;
 import base.WebSocketService;
 import game.GameUser;
 import messagesystem.Address;
+import org.jetbrains.annotations.Nullable;
 
 public class MessageNotifyInitGame extends MessageToWebSocketService {
     private final GameUser gameUser;
@@ -10,7 +11,7 @@ public class MessageNotifyInitGame extends MessageToWebSocketService {
     private final Long gameSessionId;
 
     public MessageNotifyInitGame(Address from, Address to, GameUser gameUser,
-                                 boolean ok, Long gameSessionId) {
+                                 boolean ok, @Nullable Long gameSessionId) {
         super(from, to);
         this.gameUser = gameUser;
         this.ok = ok;

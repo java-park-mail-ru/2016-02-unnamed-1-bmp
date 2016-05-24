@@ -25,6 +25,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 @WebSocket
 public class GameWebSocket implements Abonent {
@@ -77,9 +78,6 @@ public class GameWebSocket implements Abonent {
                 messageSystem.getAddressService().getWebSocketServiceAddress(), this));
         if (gameUser != null && gameSession != null) {
             gameUser.setOffline();
-            messageSystem.sendMessage(new MessageRemoveUser(this.address,
-                    messageSystem.getAddressService().getGameMechanicsAddressFor(gameUser.getName()),
-                    gameUser));
 
             final GameUser opponent = gameSession.getOpponent(gameUser);
             if (opponent != null) {
@@ -141,7 +139,7 @@ public class GameWebSocket implements Abonent {
         result.setId(gameSession.getId());
         final JsonObject resultJson = result.getAsJSON();
         resultJson.add("started", new JsonPrimitive(gameSession.isStarted()));
-        final JsonArray shipsJson = collectShips(gameUser);
+        final JsonArray shipsJson = collectShips(gameUser, true);
         resultJson.add("ships", shipsJson);
         final JsonArray shootsJson = collectShoots(gameUser);
         resultJson.add("shoots", shootsJson);
@@ -152,7 +150,7 @@ public class GameWebSocket implements Abonent {
                 gameSession.notifyOpponentOnline();
                 final String opponentName = opponent.getName();
                 resultJson.add("opponentName", new JsonPrimitive(opponentName));
-                final JsonArray opponentShipsJson = collectShips(opponent);
+                final JsonArray opponentShipsJson = collectShips(opponent, false);
                 resultJson.add("opponentShips", opponentShipsJson);
                 final JsonArray opponentShootsJson = collectShoots(opponent);
                 resultJson.add("opponentShoots", opponentShootsJson);
@@ -162,15 +160,20 @@ public class GameWebSocket implements Abonent {
         this.send(resultJson);
     }
 
-    private JsonArray collectShips(GameUser gameuser) {
+    private JsonArray collectShips(GameUser gameuser, boolean all) {
         final JsonArray shipsJson = new JsonArray();
-        gameuser.getField().getShips().stream().filter(GameFieldShip::isKilled).forEach(ship -> {
+        Stream<GameFieldShip> ships = gameuser.getField().getShips().stream();
+        if(!all) {
+            ships = ships.filter(GameFieldShip::isKilled);
+        }
+
+        ships.forEach(ship -> {
             final JsonArray shipJson = new JsonArray();
             shipJson.add(ship.getX());
             shipJson.add(ship.getY());
             shipJson.add(ship.getLength());
             shipJson.add(ship.isVertical());
-            shipJson.add(shipJson);
+            shipsJson.add(shipJson);
         });
         return shipsJson;
     }

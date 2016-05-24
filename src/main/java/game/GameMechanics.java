@@ -7,7 +7,7 @@ import messagesystem.Abonent;
 
 public interface GameMechanics extends Abonent, Runnable {
 
-    GameSession getUserGameSession(UserDataSet user);
+    @Nullable GameSession getUserGameSession(UserDataSet user);
 
     boolean hasUserGameSession(UserDataSet user);
 

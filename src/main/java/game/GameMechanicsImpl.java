@@ -2,7 +2,6 @@ package game;
 
 import base.AnimalPlayer;
 import base.datasets.UserDataSet;
-import com.sun.istack.internal.Nullable;
 import frontend.messages.MessageNotifyInitGame;
 import frontend.messages.MessageRemoveSocketByUser;
 import messagesystem.Address;
@@ -10,6 +9,7 @@ import messagesystem.MessageSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import main.Context;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
