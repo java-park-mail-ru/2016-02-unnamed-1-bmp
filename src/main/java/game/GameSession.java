@@ -87,6 +87,9 @@ public class GameSession implements Abonent {
             this.state = STATE_STARTED;
 
             this.gameTurn = (int) Math.round(Math.random()) % USERS;
+            if(this.getCurrentTurnUser().isBot()) {
+                this.gameTurn = (this.gameTurn + 1) % USERS;
+            }
             this.notifyStart();
             this.notifyOpponentOnline();
             this.repeatTurn();
