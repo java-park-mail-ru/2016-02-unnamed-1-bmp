@@ -99,7 +99,7 @@ public class GameUserBotHelper {
     }
 
     public boolean isValidShoot(GameFieldShipDeck deck) {
-        return this.shoots.get(deck) == null;
+        return this.shoots.get(deck) == null && deck.isValidForGameFieldProperties(this.gameSession.getGameFieldProperties());
     }
 
 }
