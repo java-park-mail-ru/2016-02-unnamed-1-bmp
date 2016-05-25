@@ -2,7 +2,7 @@ package game;
 
 
 import base.datasets.UserDataSet;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 import messagesystem.Abonent;
 
 public interface GameMechanics extends Abonent, Runnable {

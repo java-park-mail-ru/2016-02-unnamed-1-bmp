@@ -3,7 +3,7 @@ package frontend;
 import base.*;
 import base.datasets.UserDataSet;
 import com.google.gson.*;
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import frontend.messages.MessageAddSocket;
 import frontend.messages.MessageOpponentOnline;
 import frontend.messages.MessageRemoveSocket;

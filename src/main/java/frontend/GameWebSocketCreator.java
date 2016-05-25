@@ -3,7 +3,7 @@ package frontend;
 import base.AccountService;
 import base.UserService;
 import base.datasets.UserDataSet;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 import dbservice.DatabaseException;
 import main.Context;
 import org.apache.logging.log4j.LogManager;

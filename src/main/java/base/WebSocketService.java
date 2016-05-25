@@ -1,7 +1,7 @@
 package base;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import frontend.GameWebSocket;
 import frontend.GameWebSocketMessage;
 import game.GameFieldShootResult;

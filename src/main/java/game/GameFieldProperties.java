@@ -1,6 +1,6 @@
 package game;
 
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

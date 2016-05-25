@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 import dbservice.DatabaseException;
 import main.Context;
 import base.datasets.UserDataSet;
