@@ -10,9 +10,9 @@ import messagesystem.Abonent;
 
 public interface WebSocketService extends Abonent, Runnable {
 
-    void addSocket(GameWebSocket socket);
+    void addSocket(@NotNull GameWebSocket socket);
 
-    void removeSocket(GameWebSocket socket);
+    void removeSocket(@NotNull GameWebSocket socket);
 
     void removeSocketByUser(@NotNull GameUser gameUser);
 
