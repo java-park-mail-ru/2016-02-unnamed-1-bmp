@@ -1,7 +1,6 @@
 package game.messages;
 
 import game.GameMechanics;
-import game.GameSession;
 import game.GameUser;
 import messagesystem.Address;
 

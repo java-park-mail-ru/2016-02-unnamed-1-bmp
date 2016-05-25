@@ -1,11 +1,9 @@
 package base;
 
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.NotNull;
 import org.hibernate.Session;
+import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface
 public interface HibernateUnitVoid {
-    @Nullable
     void operate(@NotNull Session session);
 }

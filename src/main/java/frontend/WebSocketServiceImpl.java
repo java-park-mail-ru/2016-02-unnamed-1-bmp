@@ -122,7 +122,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         shootMessage.setY(result.getY());
         shootMessage.setStatus(result.getState().toString());
 
-        if (result.isKilled()) {
+        if (result.isKilled() && result.getShip() != null) {
             shootMessage.setStartX(result.getShip().getX());
             shootMessage.setStartY(result.getShip().getY());
             shootMessage.setLength(result.getShip().getLength());

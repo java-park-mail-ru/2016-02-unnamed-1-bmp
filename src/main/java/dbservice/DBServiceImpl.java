@@ -57,7 +57,6 @@ public class DBServiceImpl implements DBService {
 
 
     @Override
-    @Nullable
     public void doWork(@NotNull HibernateUnitVoid work) throws DatabaseException {
         Transaction transaction = null;
         try( Session session = sessionFactory.openSession()) {

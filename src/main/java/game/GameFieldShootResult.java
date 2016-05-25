@@ -1,5 +1,7 @@
 package game;
 
+import org.jetbrains.annotations.Nullable;
+
 public class GameFieldShootResult {
 
     private final GameFieldShootState state;
@@ -20,6 +22,7 @@ public class GameFieldShootResult {
         this.ship = ship;
     }
 
+    @Nullable
     public GameFieldShip getShip() {
         return this.ship;
     }
