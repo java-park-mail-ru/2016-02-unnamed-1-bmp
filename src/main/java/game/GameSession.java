@@ -150,6 +150,10 @@ public class GameSession implements Abonent {
 
     public void giveUp(GameUser gameUser) {
         if (this.state != STATE_STARTED) {
+            messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
+                    messageSystem.getAddressService().getWebSocketServiceAddress(),
+                    gameUser, false));
+            this.finish();
             return;
         }
         LOGGER.info("Give up in game session id {}, user {}", this.id, gameUser.getName());
