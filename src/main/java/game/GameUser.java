@@ -2,18 +2,18 @@ package game;
 
 import base.UserService;
 import base.datasets.UserDataSet;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 import dbservice.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 
 public class GameUser {
     private static final Logger LOGGER = LogManager.getLogger(GameUser.class);
     private final String name;
-    private final UserDataSet user;
+    private UserDataSet user;
 
     private final UserService userService;
 
@@ -69,6 +69,7 @@ public class GameUser {
         try {
             if (this.user != null && this.userService != null) {
                 this.userService.incrementUserScore(this.user.getId());
+                this.user = this.userService.getUserById(this.user.getId());
             }
         } catch (DatabaseException e) {
             LOGGER.info("Raise database exceplion", e);

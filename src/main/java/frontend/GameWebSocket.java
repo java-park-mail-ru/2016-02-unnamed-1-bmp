@@ -145,10 +145,13 @@ public class GameWebSocket implements Abonent {
             resultJson.add("started", new JsonPrimitive(gameSession.isStarted()));
             final JsonArray shipsJson = this.collectShips(gameUser, true);
             resultJson.add("ships", shipsJson);
+            final JsonArray killedShipsJson = this.collectShips(gameUser, false);
+            resultJson.add("killedShips", killedShipsJson);
             final JsonArray shootsJson = this.collectShoots(gameUser);
             resultJson.add("shoots", shootsJson);
 
             if (gameSession.isStarted()) {
+                resultJson.add("turn", new JsonPrimitive(gameSession.isTurnOf(gameUser)));
                 final GameUser opponent = gameSession.getOpponent(gameUser);
                 if (opponent != null) {
                     gameSession.notifyOpponentOnline();

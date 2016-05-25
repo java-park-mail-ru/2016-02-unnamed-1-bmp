@@ -17,6 +17,6 @@ public class MessageOpponentOnline extends MessageToWebSocketService {
 
     @Override
     protected void exec(WebSocketService webSocketService) {
-        webSocketService.notifyOpponentOnline(current, opponent);
+        webSocketService.notifyOpponentOnline(this.opponent, this.current);
     }
 }
