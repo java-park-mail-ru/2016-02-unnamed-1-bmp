@@ -1,6 +1,8 @@
 package frontend;
 
 import base.WebSocketService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 import game.GameFieldShootResult;
@@ -14,6 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 
 
 public class WebSocketServiceImpl implements WebSocketService {
+    private static final Logger LOGGER = LogManager.getLogger(WebSocketServiceImpl.class);
     private static final long STEP_TIME = 200;
     private final ConcurrentMap<Long, GameWebSocket> sockets = new ConcurrentHashMap<>();
     private final Address address = new Address();
@@ -168,7 +171,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             try {
                 Thread.sleep(STEP_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.error("Thread interrupted", e);
             }
         }
     }

@@ -223,7 +223,7 @@ public class GameMechanicsImpl implements GameMechanics {
                 timeStep(stepCounter++ % STEP_COUNT_EXTENDED == 0);
                 Thread.sleep(STEP_TIME);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.error("Thread interrupted", e);
             }
         }
     }
