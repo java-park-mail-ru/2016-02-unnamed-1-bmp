@@ -36,7 +36,7 @@ public class ScoreboardServlet extends HttpServlet {
         try {
             topTen = userService.getTop();
         } catch (DatabaseException e) {
-            LOGGER.error(e);
+            LOGGER.error("Database error while getting top ten", e);
             response.getWriter().println(usersArray);
             return;
         }

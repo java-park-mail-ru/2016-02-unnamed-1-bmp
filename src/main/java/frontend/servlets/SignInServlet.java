@@ -66,6 +66,7 @@ public class SignInServlet extends HttpServlet {
                 message = jsonParser.next();
             }
         } catch (JsonParseException e) {
+            LOGGER.error("Json Syntax error while doPost", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
             response.getWriter().println(responseBody);
             return;
@@ -87,7 +88,7 @@ public class SignInServlet extends HttpServlet {
         } catch (DatabaseException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
-            LOGGER.debug("Wrong request", e);
+            LOGGER.error("Wrong request (couldnt't find user by login)", e);
             response.getWriter().println(responseBody);
             return;
         }
@@ -96,7 +97,7 @@ public class SignInServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Неправильный логин и пароль"));
             responseBody.add("field", new JsonPrimitive("password"));
-            LOGGER.debug("Wrong login or password");
+            LOGGER.error("Wrong login or password");
             response.getWriter().println(responseBody);
             return;
         }

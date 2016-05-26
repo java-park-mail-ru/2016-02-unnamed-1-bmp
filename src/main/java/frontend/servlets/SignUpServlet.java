@@ -46,6 +46,7 @@ public class SignUpServlet extends HttpServlet {
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't start session)", e);
             goOutDatabseException(response, responseBody,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
             response.getWriter().println(responseBody);
@@ -75,6 +76,7 @@ public class SignUpServlet extends HttpServlet {
         try {
             if (jsonParser.hasNext()) message = jsonParser.next();
         } catch (JsonParseException e) {
+            LOGGER.error("Json Syntax error", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
             response.getWriter().println(responseBody);
             return;
@@ -116,6 +118,7 @@ public class SignUpServlet extends HttpServlet {
             final String sessionId = request.getSession().getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't start session)", e);
             goOutDatabseException(response, responseBody,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
             response.getWriter().println(responseBody);
@@ -137,10 +140,12 @@ public class SignUpServlet extends HttpServlet {
         try {
             currUser = checkRequest(request);
         } catch (NumberFormatException e) {
+            LOGGER.error("Wrong number format (user id)", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             response.getWriter().println(responseBody);
             return;
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't get user)", e);
             goOutDatabseException(response, responseBody,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
             response.getWriter().println(responseBody);
@@ -184,8 +189,10 @@ public class SignUpServlet extends HttpServlet {
                 LOGGER.info("Deleted user with id {}", currUser.getId());
             }
         } catch (NumberFormatException e) {
+            LOGGER.error("Wrong number format (user id)", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Wrong request");
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't remove user)", e);
             goOutDatabseException(response, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "This session is not registered", e);
         }

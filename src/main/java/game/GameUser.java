@@ -72,7 +72,7 @@ public class GameUser {
                 this.user = this.userService.getUserById(this.user.getId());
             }
         } catch (DatabaseException e) {
-            LOGGER.info("Raise database exceplion", e);
+            LOGGER.error("Database error (couldn't inc user score)", e);
         }
     }
 

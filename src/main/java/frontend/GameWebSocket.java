@@ -121,10 +121,10 @@ public class GameWebSocket implements Abonent {
                     throw new JsonSyntaxException("Unknown action");
             }
         } catch (JsonSyntaxException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Json Syntax error while onMessage", e);
             this.send(new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, "Wrong JSON: " + e.getMessage()));
         } catch (RuntimeException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Unexpected error while onMessage", e);
             this.send(new GameWebSocketMessage(GameWebSocketMessage.MessageType.ERROR, "Unexpected error"));
         }
     }

@@ -39,7 +39,7 @@ public class GameWebSocketCreator implements WebSocketCreator {
         try {
             userData = userService.getUserById(userId);
         } catch (DatabaseException e) {
-            LOGGER.error("Can't find info about user (for creating socket) with id {}", userId);
+            LOGGER.error("Can't find info about user (for creating socket) with id {}", userId, e);
             return null;
         }
         return new GameWebSocket(userData, context);
