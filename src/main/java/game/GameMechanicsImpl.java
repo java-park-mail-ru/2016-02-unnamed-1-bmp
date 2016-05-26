@@ -38,10 +38,7 @@ public class GameMechanicsImpl implements GameMechanics {
     @Override
     public GameSession getUserGameSession(UserDataSet user) {
         final long userId = user.getId();
-        if (this.usersToSessions.containsKey(userId)) {
-            return this.usersToSessions.get(userId);
-        }
-        return null;
+        return this.usersToSessions.get(userId);
     }
 
     @Override
