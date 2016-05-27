@@ -86,7 +86,7 @@ public class SignInServlet extends HttpServlet {
         try {
             user = userService.getUserByLogin(login);
         } catch (DatabaseException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
             LOGGER.error("Wrong request (couldnt't find user by login)", e);
             response.getWriter().println(responseBody);
