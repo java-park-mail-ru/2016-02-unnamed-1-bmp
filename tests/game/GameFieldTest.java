@@ -51,7 +51,7 @@ public class GameFieldTest {
         Integer x = 1;
 
         while(gameField1.countShips(props.getMaxDeck()) < props.getShips(props.getMaxDeck())) {
-            assertTrue(gameField.addShip(new GameFieldShip(x, 1, props.getMaxDeck(), true)));
+            assertTrue(gameField1.addShip(new GameFieldShip(x, 1, props.getMaxDeck(), true)));
 
             x+= 2;
         }
@@ -91,7 +91,7 @@ public class GameFieldTest {
 
         for(int i = 0; i < ships.size(); i++) {
             testGameField.addShip(ships.get(i));
-            assertEquals(testGameField.isValid(), i < ships.size() - 1);
+            assertEquals(testGameField.isValid(), i >= ships.size() - 1);
         }
     }
 }
