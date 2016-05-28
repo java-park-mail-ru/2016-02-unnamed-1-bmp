@@ -80,6 +80,11 @@ public class GameMechanicsImpl implements GameMechanics {
             final long userId = this.waiters.remove(0);
             final GameSession checkGameSession = this.usersToSessions.get(userId);
 
+            if(checkGameSession == null) {
+                this.addUserForRandomGame(gameUser);
+                return;
+            }
+
             if (checkGameSession.addUser(gameUser)) {
                 LOGGER.info("Add user to random game, user {}, game session id {}",
                         gameUser.getName(), checkGameSession.getId());

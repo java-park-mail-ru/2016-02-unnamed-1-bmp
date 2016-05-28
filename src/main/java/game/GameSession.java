@@ -97,7 +97,7 @@ public class GameSession implements Abonent {
     }
 
     public void finish() {
-        if (this.state == STATE_STARTED) {
+        if (this.state != STATE_FINISHED) {
             LOGGER.info("Finish game session id {}", this.id);
             this.state = STATE_FINISHED;
             for (GameUser user : gameUsers) {
@@ -152,7 +152,7 @@ public class GameSession implements Abonent {
     }
 
     public void giveUp(GameUser gameUser) {
-        if (this.state != STATE_STARTED) {
+        if (this.state == STATE_NOT_STARTED) {
             messageSystem.sendMessage(new MessageNotifyGameOver(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(),
                     gameUser, false));
