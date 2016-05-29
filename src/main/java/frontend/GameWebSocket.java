@@ -3,7 +3,9 @@ package frontend;
 import base.*;
 import base.datasets.UserDataSet;
 import com.google.gson.*;
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.WebSocketException;
+import org.eclipse.jetty.websocket.api.WriteCallback;
 import org.jetbrains.annotations.NotNull;
 import frontend.messages.MessageAddSocket;
 import frontend.messages.MessageOpponentOnline;
@@ -22,7 +24,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import java.io.IOException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
 @WebSocket
@@ -33,6 +35,9 @@ public class GameWebSocket implements Abonent {
     private final UserDataSet user;
     private final UserService userService;
     private Session session;
+
+    private final ConcurrentLinkedQueue<String> sendQueue = new ConcurrentLinkedQueue<>();
+    private boolean isActiveSendQueue = false;
 
     GameWebSocket(@NotNull UserDataSet user, Context context) {
         this.user = user;
@@ -272,12 +277,24 @@ public class GameWebSocket implements Abonent {
     }
 
     public void send(String message) {
+        this.sendQueue.add(message);
+        this.sendNextMessage();
+    }
+
+    private void sendNextMessage() {
+        if (this.isActiveSendQueue) {
+            return;
+        }
+
+        final String message = this.sendQueue.peek();
+        if (message == null) return;
+
         try {
-            LOGGER.info("Attempting to send a message in web socket, user id {}, message: \"{}\"",
-                    this.user.getId(), message);
-            this.session.getRemote().sendString(message);
-        } catch (IOException | WebSocketException e) {
-            LOGGER.error(e.getMessage());
+            final RemoteEndpoint remote = this.session.getRemote();
+            this.isActiveSendQueue = true;
+            remote.sendString(message, new SendCallback(this, message));
+        } catch (WebSocketException e) {
+            LOGGER.error("Couldn't get remote endpoint for web socket, user id {}", this.user.getId());
         }
     }
 
@@ -303,6 +320,31 @@ public class GameWebSocket implements Abonent {
     @Override
     public Address getAddress() {
         return address;
+    }
+
+    private static class SendCallback implements WriteCallback {
+        private final GameWebSocket gameWebSocket;
+        private final String message;
+
+        SendCallback(GameWebSocket gameWebSocket, String message) {
+            this.gameWebSocket = gameWebSocket;
+            this.message = message;
+        }
+
+        @Override
+        public void writeFailed(Throwable e) {
+            LOGGER.info("Fail to send a message in websocket, user id {}, {}", this.gameWebSocket.getUser().getId(), this.message);
+            LOGGER.error("Fail to send a message in websocket", e);
+            this.gameWebSocket.isActiveSendQueue = false;
+        }
+
+        @Override
+        public void writeSuccess() {
+            LOGGER.info("Success send a message in websocket, user id {}, {}", this.gameWebSocket.getUser().getId(), this.message);
+            this.gameWebSocket.sendQueue.poll();
+            this.gameWebSocket.isActiveSendQueue = false;
+            this.gameWebSocket.sendNextMessage();
+        }
     }
 }
 
