@@ -3,6 +3,7 @@ package frontend;
 import base.*;
 import base.datasets.UserDataSet;
 import com.google.gson.*;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.jetbrains.annotations.NotNull;
 import frontend.messages.MessageAddSocket;
 import frontend.messages.MessageOpponentOnline;
@@ -275,7 +276,7 @@ public class GameWebSocket implements Abonent {
             LOGGER.info("Attempting to send a message in web socket, user id {}, message: \"{}\"",
                     this.user.getId(), message);
             this.session.getRemote().sendString(message);
-        } catch (IOException e) {
+        } catch (IOException | WebSocketException e) {
             LOGGER.error(e.getMessage());
         }
     }
