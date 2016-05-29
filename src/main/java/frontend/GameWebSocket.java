@@ -154,7 +154,6 @@ public class GameWebSocket implements Abonent {
                 resultJson.add("turn", new JsonPrimitive(gameSession.isTurnOf(gameUser)));
                 final GameUser opponent = gameSession.getOpponent(gameUser);
                 if (opponent != null) {
-                    gameSession.notifyOpponentOnline();
                     final String opponentName = opponent.getName();
                     resultJson.add("opponentName", new JsonPrimitive(opponentName));
                     final JsonArray opponentShipsJson = this.collectShips(opponent, false);
