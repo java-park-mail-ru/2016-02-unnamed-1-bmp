@@ -79,8 +79,10 @@ public class GameMechanicsImpl implements GameMechanics {
         } else {
             final long userId = this.waiters.remove(0);
             final GameSession checkGameSession = this.usersToSessions.get(userId);
+            LOGGER.info("Check game session of waiting user id {}", userId);
 
-            if(checkGameSession == null) {
+            if(checkGameSession == null || !checkGameSession.isNotStarted()) {
+                LOGGER.error("Checked game session for waiting user id {}: error", userId);
                 this.addUserForRandomGame(gameUser);
                 return;
             }
@@ -95,7 +97,9 @@ public class GameMechanicsImpl implements GameMechanics {
                 checkGameSession.start();
                 return;
             } else {
-                this.waiters.add(userId);
+                LOGGER.error("Couldn't add user id {} to game of waiting user {}", gameUser.getUser().getId(), userId);
+                this.addUserForRandomGame(gameUser);
+                return;
             }
         }
         messageSystem.sendMessage(new MessageNotifyInitGame(this.address,
@@ -187,6 +191,7 @@ public class GameMechanicsImpl implements GameMechanics {
         if (gameUser.getUser() != null) {
             final long userId = gameUser.getUser().getId();
             this.gameUsers.remove(userId, gameUser);
+            this.waiters.remove(userId);
 
             messageSystem.sendMessage(new MessageRemoveSocketByUser(this.address,
                     messageSystem.getAddressService().getWebSocketServiceAddress(), gameUser));
