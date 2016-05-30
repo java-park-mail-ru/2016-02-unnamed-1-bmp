@@ -7,6 +7,8 @@
           <unit-entry name="db_conf" />
           <unit-entry name="dbconfig.xml" />
           <unit-entry name="h2config.xml" />
+          <unit-entry name="setups:dbconfig.xml" />
+          <unit-entry name="setups:h2config.xml" />
         </datasource-map>
         <naming-strategy-map />
         <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/setups/db_conf" />
@@ -22,7 +24,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/public_html" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/setups" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/out/2016_05_27_23_01_53" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

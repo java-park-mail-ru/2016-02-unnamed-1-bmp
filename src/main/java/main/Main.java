@@ -25,6 +25,7 @@ import org.hibernate.cfg.Configuration;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class Main {
@@ -36,9 +37,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         int port = DEFAULT_PORT;
         String host = DEFAULT_HOST;
-        try (final FileInputStream serverProps = new FileInputStream("setups/server.properties")) {
+        try (final InputStream stream = Main.class.getClassLoader().getResourceAsStream("serv.properties")) {
             final Properties properties = new Properties();
-            properties.load(serverProps);
+            properties.load(stream);
             port = Integer.valueOf(properties.getProperty("port"));
             host = properties.getProperty("host");
         } catch (FileNotFoundException e) {
