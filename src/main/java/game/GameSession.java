@@ -29,7 +29,7 @@ public class GameSession implements Abonent {
     private static final int STATE_STARTED = 1;
     private static final int STATE_FINISHED = 2;
 
-    private final long startTime;
+    private long startTime;
     private final GameFieldProperties gameFieldProperties;
     private final ArrayList<GameUser> gameUsers = new ArrayList<>();
     private final long id;
@@ -85,6 +85,7 @@ public class GameSession implements Abonent {
         if (this.state == STATE_NOT_STARTED && this.gameUsers.size() == USERS) {
             LOGGER.info("Start game session id {}", this.id);
             this.state = STATE_STARTED;
+            this.startTime = new Date().getTime();
 
             this.gameTurn = (int) Math.round(Math.random()) % USERS;
             if(this.getCurrentTurnUser().isBot()) {
