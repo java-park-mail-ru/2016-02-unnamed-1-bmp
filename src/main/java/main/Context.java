@@ -13,7 +13,7 @@ public class Context {
     private final Map<Class<?>, Object> context = new HashMap<>();
 
     public void add(Class<?> clazz, Object object) {
-        if(context.containsKey(clazz)) {
+        if (context.containsKey(clazz)) {
             LOGGER.fatal("Trying to add existing class to context");
         } else {
             context.put(clazz, object);

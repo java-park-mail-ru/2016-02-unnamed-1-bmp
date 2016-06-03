@@ -21,14 +21,14 @@ public class TestsWithDb {
         userService = new UserServiceImpl(dbService);
     }
 
-    @SuppressWarnings("JpaQlInspection")
-    @After
-    public void cleanUp() throws DatabaseException {
-        dbService.doWork((session)->session.createQuery("DELETE from UserDataSet").executeUpdate());
-    }
-
     @AfterClass
     public static void turnDown() {
         dbService.shutdown();
+    }
+
+    @SuppressWarnings("JpaQlInspection")
+    @After
+    public void cleanUp() throws DatabaseException {
+        dbService.doWork((session) -> session.createQuery("DELETE from UserDataSet").executeUpdate());
     }
 }

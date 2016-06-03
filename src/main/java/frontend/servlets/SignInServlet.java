@@ -50,6 +50,7 @@ public class SignInServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
@@ -65,6 +66,7 @@ public class SignInServlet extends HttpServlet {
                 message = jsonParser.next();
             }
         } catch (JsonParseException e) {
+            LOGGER.error("Json Syntax error while doPost", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
             response.getWriter().println(responseBody);
             return;
@@ -84,18 +86,18 @@ public class SignInServlet extends HttpServlet {
         try {
             user = userService.getUserByLogin(login);
         } catch (DatabaseException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             responseBody.add("error", new JsonPrimitive("Wrong request"));
-            LOGGER.debug("Wrong request", e);
+            LOGGER.error("Wrong request (couldnt't find user by login)", e);
             response.getWriter().println(responseBody);
             return;
         }
 
         if (user == null || !Objects.equals(user.getPassword(), password)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            responseBody.add("error", new JsonPrimitive("Wrong login or password"));
+            responseBody.add("error", new JsonPrimitive("Неправильный логин и пароль"));
             responseBody.add("field", new JsonPrimitive("password"));
-            LOGGER.debug("Wrong login or password");
+            LOGGER.error("Wrong login or password");
             response.getWriter().println(responseBody);
             return;
         }
@@ -126,7 +128,7 @@ public class SignInServlet extends HttpServlet {
     }
 
     private void goOut(HttpServletResponse response, JsonObject responseBody,
-                       int status, String error ) {
+                       int status, String error) {
         response.setStatus(status);
         responseBody.add("error", new JsonPrimitive(error));
         LOGGER.debug(error);

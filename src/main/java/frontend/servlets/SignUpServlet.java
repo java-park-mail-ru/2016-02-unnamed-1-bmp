@@ -1,6 +1,7 @@
 package frontend.servlets;
 
 import base.AccountService;
+import base.AnimalPlayer;
 import base.UserService;
 import com.google.gson.*;
 
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import org.jetbrains.annotations.Nullable;
 import dbservice.DatabaseException;
 import main.Context;
 import base.datasets.UserDataSet;
@@ -27,10 +29,40 @@ public class SignUpServlet extends HttpServlet {
         this.accountService = (AccountService) context.get(AccountService.class);
     }
 
+    private void doPostAnonymous(JsonElement message, HttpServletRequest request,
+                                 HttpServletResponse response) throws IOException {
+        final JsonObject responseBody = new JsonObject();
+
+        LOGGER.info("Incoming message: {}", message.toString());
+        if (message.getAsJsonObject().get("login") == null) {
+            message.getAsJsonObject().add("login", new JsonPrimitive(""));
+        }
+
+        final String login = message.getAsJsonObject().get("login").getAsString().trim();
+        final long newUserId;
+        try {
+            final String realLogin = login.isEmpty() ? AnimalPlayer.randomAnimal() : login;
+            newUserId = userService.saveUser(new UserDataSet(realLogin));
+            final String sessionId = request.getSession().getId();
+            accountService.addSessions(sessionId, newUserId);
+        } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't start session)", e);
+            goOutDatabseException(response, responseBody,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
+            response.getWriter().println(responseBody);
+            return;
+        }
+        responseBody.add("id", new JsonPrimitive(newUserId));
+        response.setStatus(HttpServletResponse.SC_OK);
+        LOGGER.info("Register anonymous user {}", login);
+        response.getWriter().println(responseBody);
+    }
 
     @Override
+    @SuppressWarnings("OverlyComplexMethod")
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final BufferedReader bufferedReader = request.getReader();
         final JsonStreamParser jsonParser = new JsonStreamParser(bufferedReader);
@@ -44,12 +76,20 @@ public class SignUpServlet extends HttpServlet {
         try {
             if (jsonParser.hasNext()) message = jsonParser.next();
         } catch (JsonParseException e) {
+            LOGGER.error("Json Syntax error", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Can\'t parse JSON");
             response.getWriter().println(responseBody);
             return;
         }
 
         LOGGER.info("Incoming message: {}", message.toString());
+
+        final JsonElement isAnonymous = message.getAsJsonObject().get("isAnonymous");
+        if (isAnonymous != null && isAnonymous.getAsBoolean()) {
+            this.doPostAnonymous(message, request, response);
+            return;
+        }
+
         if (message.getAsJsonObject().get("login") == null || message.getAsJsonObject().get("email") == null
                 || message.getAsJsonObject().get("password") == null) {
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Not all params send");
@@ -64,21 +104,21 @@ public class SignUpServlet extends HttpServlet {
         try {
             if (!userService.isEmailUnique(email)) {
                 goOutFieldError(response, responseBody, HttpServletResponse.SC_FORBIDDEN,
-                        "Email already exist", "email");
+                        "Данный email уже зарегистрирован", "email");
                 response.getWriter().println(responseBody);
                 return;
             }
             if (!userService.isLoginUnique(login)) {
                 goOutFieldError(response, responseBody, HttpServletResponse.SC_BAD_REQUEST,
-                        "Login already exist", "login");
+                        "Данный логин уже зарегистрирован", "login");
                 response.getWriter().println(responseBody);
                 return;
             }
-            userService.saveUser(new UserDataSet(login, password, email));
+            newUserId = userService.saveUser(new UserDataSet(login, password, email));
             final String sessionId = request.getSession().getId();
-            newUserId = userService.getUserByLogin(login).getId();
             accountService.addSessions(sessionId, newUserId);
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't start session)", e);
             goOutDatabseException(response, responseBody,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
             response.getWriter().println(responseBody);
@@ -86,7 +126,7 @@ public class SignUpServlet extends HttpServlet {
         }
         responseBody.add("id", new JsonPrimitive(newUserId));
         response.setStatus(HttpServletResponse.SC_OK);
-        LOGGER.info("Rigister user {}", login);
+        LOGGER.info("Register user {}", login);
         response.getWriter().println(responseBody);
     }
 
@@ -94,15 +134,18 @@ public class SignUpServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
         final JsonObject responseBody = new JsonObject();
         final UserDataSet currUser;
         try {
             currUser = checkRequest(request);
         } catch (NumberFormatException e) {
+            LOGGER.error("Wrong number format (user id)", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             response.getWriter().println(responseBody);
             return;
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't get user)", e);
             goOutDatabseException(response, responseBody,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e);
             response.getWriter().println(responseBody);
@@ -119,7 +162,11 @@ public class SignUpServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_OK);
         responseBody.add("id", new JsonPrimitive(currUserId));
         responseBody.add("login", new JsonPrimitive(currUser.getLogin()));
-        responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
+        if (currUser.getEmail() != null) {
+            responseBody.add("email", new JsonPrimitive(currUser.getEmail()));
+        }
+        responseBody.add("score", new JsonPrimitive(currUser.getScore()));
+        responseBody.add("isAnonymous", new JsonPrimitive(currUser.getIsAnonymous()));
         LOGGER.info("Get info about user {}", currUser.getLogin());
         response.getWriter().println(responseBody);
     }
@@ -132,7 +179,7 @@ public class SignUpServlet extends HttpServlet {
 
         try {
             final UserDataSet currUser = checkRequest(request);
-            if (currUser == null || !userService.deleteUserById(currUser.getId()) ) {
+            if (currUser == null || !userService.deleteUserById(currUser.getId())) {
                 goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "User doesn\'t exist");
                 response.getWriter().println(responseBody);
                 return;
@@ -142,8 +189,10 @@ public class SignUpServlet extends HttpServlet {
                 LOGGER.info("Deleted user with id {}", currUser.getId());
             }
         } catch (NumberFormatException e) {
+            LOGGER.error("Wrong number format (user id)", e);
             goOut(response, responseBody, HttpServletResponse.SC_BAD_REQUEST, "Wrong request");
         } catch (DatabaseException e) {
+            LOGGER.error("Database error (couldn't remove user)", e);
             goOutDatabseException(response, responseBody, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "This session is not registered", e);
         }
@@ -151,6 +200,7 @@ public class SignUpServlet extends HttpServlet {
         response.getWriter().println(responseBody);
     }
 
+    @Nullable
     public UserDataSet checkRequest(HttpServletRequest request) throws DatabaseException {
         if (request.getPathInfo() == null)
             return null;

@@ -7,11 +7,11 @@ import dbservice.DatabaseException;
 import java.util.List;
 
 public interface UserService {
-    void saveUser (UserDataSet dataSet) throws DatabaseException;
+    Long saveUser(UserDataSet dataSet) throws DatabaseException;
 
     void incrementUserScore(long id) throws DatabaseException;
 
-    UserDataSet getUserById (long id) throws DatabaseException;
+    UserDataSet getUserById(long id) throws DatabaseException;
 
     UserDataSet getUserByEmail(String email) throws DatabaseException;
 

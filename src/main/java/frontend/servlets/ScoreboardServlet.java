@@ -2,6 +2,7 @@ package frontend.servlets;
 
 import base.UserService;
 import base.datasets.UserDataSet;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import dbservice.DatabaseException;
@@ -27,19 +28,26 @@ public class ScoreboardServlet extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request,
-                      HttpServletResponse response) throws ServletException, IOException{
-        final JsonObject responseBody = new JsonObject();
+                      HttpServletResponse response) throws ServletException, IOException {
+        response.setCharacterEncoding("UTF-8");
+
+        final JsonArray usersArray = new JsonArray();
         final List<UserDataSet> topTen;
         try {
             topTen = userService.getTop();
         } catch (DatabaseException e) {
-            LOGGER.error(e);
+            LOGGER.error("Database error while getting top ten", e);
+            response.getWriter().println(usersArray);
             return;
         }
-        for(UserDataSet user: topTen) {
-            responseBody.add(user.getLogin(), new JsonPrimitive(user.getScore()));
+
+        for (UserDataSet user : topTen) {
+            final JsonObject userObject = new JsonObject();
+            userObject.add("name", new JsonPrimitive(user.getLogin()));
+            userObject.add("score", new JsonPrimitive(user.getScore()));
+            usersArray.add(userObject);
         }
-        response.getWriter().println(responseBody);
+        response.getWriter().println(usersArray);
     }
 
 }
